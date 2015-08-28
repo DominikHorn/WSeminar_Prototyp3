@@ -2,37 +2,18 @@ package com.prototype3.gameobjects;
 
 import org.newdawn.slick.*;
 
+/**
+ * Super class for all objects in the game
+ * 
+ * @author Dominik
+ */
 public abstract class GameObject {
-	// Position in space
-	protected float x;
-	protected float y;
+	// Update called before physics engine runs
+	public abstract void prePhysicsUpdate(int delta) throws SlickException;
 
-	// new x and y after collision routine
-	public float newX;
-	public float newY;
-	public float collisionWidth;
-	public float collisionHeight;
-
-	public GameObject() {
-		// Initialize all attributes to default values
-		this.x = 0;
-		this.y = 0;
-		this.newX = 0;
-		this.newY = 0;
-		this.collisionWidth = 1;
-		this.collisionHeight = 1;
-	}
-
-	// Update newX and newY
-	public abstract void update(int delta) throws SlickException;
+	// Update called after physics engine ran
+	public abstract void afterPhysicsUpdate(int delta) throws SlickException;
 
 	// Render GameObject
 	public abstract void render(Graphics g) throws SlickException;
-
-	// Method gets automatically called after collision routine (before render).
-	// Makes sure to update the gameObjects position
-	public void updatePosition() {
-		this.x = this.newX;
-		this.y = this.newY;
-	}
 }

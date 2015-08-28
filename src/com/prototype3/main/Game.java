@@ -9,11 +9,7 @@ import com.prototype3.gameobjects.Player;
 public class Game extends BasicGame {
 	private static final int DISPLAY_WIDTH = 1280;
 	private static final int DISPLAY_HEIGHT = 720;
-	public static final float GRAVITY = 0.1f;
-
-	// TODO: manage in a not so primitive fassion
-//	private GameObject[] gameObjects;
-//	private GameObject[] tiles;
+	public static final float GRAVITY = 10f;
 	
 	// Save player seperatly since he is a very special entity that must react to key input etc
 	private Player player;
@@ -28,18 +24,18 @@ public class Game extends BasicGame {
 		container.setMaximumLogicUpdateInterval(17);
 		container.setClearEachFrame(false);
 		
-		this.player = new Player(100, 100, 100, 200);
+		this.player = new Player(100, 100);
 	}
 
 	@Override
 	public void update(GameContainer container, int delta) throws SlickException {
-		// Update Gameobjects
-		this.player.update(delta);
+		// pre physics engine
+		this.player.prePhysicsUpdate(delta);
 	
-		// TODO: collision detection
+		// TODO: run physics engine
 		
-		// Move objects
-		this.player.updatePosition();
+		// after physics engine
+		this.player.afterPhysicsUpdate(delta);
 	}
 
 	@Override
@@ -64,9 +60,3 @@ public class Game extends BasicGame {
 		}
 	}
 }
-
-/*
- * TODO: - Design game - implement game - implement ai + benchmark - implement
- * neural network + evolutionary algorithm - write essay
- *
- */

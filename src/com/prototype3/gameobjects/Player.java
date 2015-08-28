@@ -3,29 +3,17 @@ package com.prototype3.gameobjects;
 import org.newdawn.slick.*;
 import com.prototype3.main.Game;
 
-public class Player extends GameObject {
+public class Player extends PhysicsObject {
 	private static final int IDLE_ANIMATION_TIME = 5000;
 	private SpriteSheet playerSprites;
 	private Animation idleAnimation;
 	private Image playerImage;
-	private float width;
-	private float height;
 	private int idleTime;
 	private boolean playIdleAnimation;
 
-	public float speedX;
-	public float speedY;
+	public Player(int x, int y) throws SlickException {
+		super(x, y);
 
-	public Player(float x, float y, float width, float height) throws SlickException {
-		super();
-
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
-
-		this.speedX = 0;
-		this.speedY = 0;
 		this.idleTime = 0;
 		this.playIdleAnimation = false;
 		this.playerSprites = new SpriteSheet(new Image("assets/img/Player.png"), 128, 256);
@@ -41,7 +29,19 @@ public class Player extends GameObject {
 	}
 
 	@Override
-	public void update(int delta) throws SlickException {
+	public void prePhysicsUpdate(int delta) throws SlickException {
+		// Update speed first
+		this.speedY += Game.GRAVITY;
+		
+		
+		// Update newX and newY according to speed
+		super.prePhysicsUpdate(delta);
+	}
+
+	public void afterPhysicsUpdate(int delta) throws SlickException {
+		// Update everything first
+		super.afterPhysicsUpdate(delta);
+		
 		// Handle idle animation
 		if (!this.playIdleAnimation && this.speedX == 0 && this.speedY == 0) {
 			this.idleTime += delta;
@@ -53,15 +53,8 @@ public class Player extends GameObject {
 			if (this.idleAnimation.isStopped())
 				this.playIdleAnimation = false;
 		}
-
-		// Update speed
-		this.speedY += Game.GRAVITY;
-
-		// Move to new position
-		this.newX += speedX;
-		this.newY += speedY;
 	}
-
+	
 	@Override
 	public void render(Graphics g) throws SlickException {
 		// Render idle animation after a certain timeout if we're not moving
@@ -72,9 +65,9 @@ public class Player extends GameObject {
 		}
 
 		if (this.playIdleAnimation)
-			this.idleAnimation.draw(this.x, this.y, this.width, this.height);
+			this.idleAnimation.draw(this.x, this.y);
 		else
-			this.playerImage.draw(this.x, this.y, this.width, this.height);
+			this.playerImage.draw(this.x, this.y);
 	}
 
 	/**
