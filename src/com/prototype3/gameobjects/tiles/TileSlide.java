@@ -1,12 +1,12 @@
-package com.prototype3.main;
+package com.prototype3.gameobjects.tiles;
 
 import org.newdawn.slick.*;
 
 public class TileSlide extends Tile {
 	private Image tileSprite;
 
-	public TileSlide(int x, int y, TileSlideType tileSlideType) {
-		super(x, y);
+	public TileSlide(int x, int y, int width, int height, TileSlideType tileSlideType) {
+		super(x, y, width, height);
 		
 		switch (tileSlideType) {
 		case TILE_SLIDE_FIRST:
@@ -23,10 +23,10 @@ public class TileSlide extends Tile {
 			break;
 		}
 	}
-
+	
 	@Override
-	public void render(Graphics g) throws SlickException {
+	public void render(Graphics g, int viewPortX, int viewPortY, int viewPortWidth, int viewPortHeight)
+			throws SlickException {
 		this.tileSprite.draw(this.x, this.y);
 	}
-
 }

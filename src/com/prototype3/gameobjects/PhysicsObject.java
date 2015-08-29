@@ -6,6 +6,8 @@ import org.newdawn.slick.SlickException;
 public class PhysicsObject extends GameObject {
 	public int x;
 	public int y;
+	public int width;
+	public int height;
 	public int newX;
 	public int newY;
 	public float speedX;
@@ -15,9 +17,11 @@ public class PhysicsObject extends GameObject {
 	// TODO: squeeze width & height for rendering in there somewhere (is this
 	// even necessary????)
 
-	public PhysicsObject(int x, int y) {
+	public PhysicsObject(int x, int y, int width, int height) {
 		this.x = x;
 		this.y = y;
+		this.width = width;
+		this.height = height;
 	}
 
 	@Override
@@ -36,7 +40,8 @@ public class PhysicsObject extends GameObject {
 	}
 
 	@Override
-	public void render(Graphics g) throws SlickException {
+	public void render(Graphics g, int viewPortX, int viewPortY, int viewPortWidth, int viewPortHeight)
+			throws SlickException {
 		// Do nothing
 	}
 }

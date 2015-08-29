@@ -15,5 +15,5 @@ public abstract class GameObject {
 	public abstract void afterPhysicsUpdate(int delta) throws SlickException;
 
 	// Render GameObject
-	public abstract void render(Graphics g) throws SlickException;
+	public abstract void render(Graphics g, int viewPortX, int viewPortY, int viewPortWidth, int viewPortHeight) throws SlickException;
 }

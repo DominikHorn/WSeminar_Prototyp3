@@ -1,4 +1,4 @@
-package com.prototype3.main;
+package com.prototype3.gameobjects.tiles;
 
 import org.newdawn.slick.*;
 import com.prototype3.gameobjects.PhysicsObject;
@@ -16,7 +16,7 @@ public class Tile extends PhysicsObject {
 		}
 	}
 
-	public Tile(int x, int y) {
-		super(x, y);
+	public Tile(int x, int y, int width, int height) {
+		super(x, y, width, height);
 	}
 }
