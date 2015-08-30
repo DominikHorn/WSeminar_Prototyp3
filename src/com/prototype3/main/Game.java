@@ -1,5 +1,6 @@
 package com.prototype3.main;
 
+import java.io.IOException;
 import java.util.logging.*;
 
 import org.newdawn.slick.*;
@@ -11,6 +12,7 @@ public class Game extends BasicGame {
 	private static final int DISPLAY_HEIGHT = 720;
 	public static final float GRAVITY = 10f;
 
+	private Level level;
 	// Save player seperatly since he is a very special entity that must react
 	// to key input etc
 	private Player player;
@@ -27,18 +29,27 @@ public class Game extends BasicGame {
 		container.setMaximumLogicUpdateInterval(17);
 		container.setClearEachFrame(false);
 
-		this.player = new Player(100, 100, 75, 150);
+		// Setup + load level
+		try {
+			this.level = new Level("assets/level/Level1");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		this.player = new Player(this.level.playerSpawnX, this.level.playerSpawnY, 75, 150);
 	}
 
 	@Override
 	public void update(GameContainer container, int delta) throws SlickException {
 		// pre physics engine
 		this.player.prePhysicsUpdate(delta);
-
+		this.level.prePhysicsUpdate(delta);
+		
 		// TODO: run physics engine
 
 		// after physics engine
 		this.player.afterPhysicsUpdate(delta);
+		this.level.afterPhysicsUpdate(delta);
 
 		// Update camera
 		this.cameraOriginX = this.player.x - DISPLAY_WIDTH / 2 + this.player.width / 2;
@@ -58,6 +69,7 @@ public class Game extends BasicGame {
 		
 		g.drawString("Howdy!", DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2);
 		this.player.render(g, cameraOriginX, cameraOriginY, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+		this.level.render(g, cameraOriginX, cameraOriginY, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 
 		// Return to previous transform state
 		g.popTransform();

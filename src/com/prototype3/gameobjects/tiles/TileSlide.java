@@ -27,6 +27,6 @@ public class TileSlide extends Tile {
 	@Override
 	public void render(Graphics g, int viewPortX, int viewPortY, int viewPortWidth, int viewPortHeight)
 			throws SlickException {
-		this.tileSprite.draw(this.x, this.y);
+		this.tileSprite.draw(this.x, this.y, this.width, this.height);
 	}
 }

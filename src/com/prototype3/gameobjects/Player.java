@@ -31,7 +31,7 @@ public class Player extends PhysicsObject {
 	@Override
 	public void prePhysicsUpdate(int delta) throws SlickException {
 		// Update speed first
-		this.speedY += Game.GRAVITY;
+//		this.speedY += Game.GRAVITY;
 
 		// Update newX and newY according to speed
 		super.prePhysicsUpdate(delta);

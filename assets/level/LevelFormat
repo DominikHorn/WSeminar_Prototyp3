@@ -1,0 +1,12 @@
+# This is a comment
+# Strings preceded by "!" are tags
+# - "!Info": Level info (Tilesize, Tilewidth/height etc)
+#	- "Name:" Level-name
+#	- "TileWidth:" tile - width in pixels
+#	- "TileHeight:" tile - height in pixels
+#	- "ChunkWidth:" chunk - width in tiles
+#	UNIMPLEMENTED: - "ChunkHeight:" chunk - height in tiles
+# - "!Level": Actual level data in ascii format
+# 	- "*": Empty (Air) Tile
+#	- "-": Basic Platform
+# 	- "x": Player spawnpoint
