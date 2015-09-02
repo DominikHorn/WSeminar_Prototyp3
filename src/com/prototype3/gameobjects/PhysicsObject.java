@@ -8,35 +8,28 @@ public class PhysicsObject extends GameObject {
 	public int y;
 	public int width;
 	public int height;
-	public int newX;
-	public int newY;
-	public float speedX;
-	public float speedY;
-
-	// TODO: find solution for collision shape
-	// TODO: squeeze width & height for rendering in there somewhere (is this
-	// even necessary????)
+	public int speedX;
+	public int speedY;
+	public boolean isStatic;
 
 	public PhysicsObject(int x, int y, int width, int height) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = height;
+		this.isStatic = false; // Objects can by default be moved
 	}
 
 	@Override
 	public void prePhysicsUpdate(int delta) throws SlickException {
-		// Update newX. Account for delta (delta is stored in milliseconds hence
-		// the conversion)
-		this.newX = this.x + (int) (this.speedX * (float) delta / 1000f);
-		this.newY = this.y + (int) (this.speedY * (float) delta / 1000f);
+		// Do nothing. Subclasses: F.e. update speed
 	}
 
 	@Override
 	public void afterPhysicsUpdate(int delta) throws SlickException {
-		// Update position
-		this.x = this.newX;
-		this.y = this.newY;
+		// Move object to newX, newY
+		this.x += this.speedX;
+		this.y += this.speedY;
 	}
 
 	@Override

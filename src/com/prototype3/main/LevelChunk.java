@@ -31,7 +31,7 @@ public class LevelChunk extends PhysicsObject {
 	 *            number of tiles in y direction
 	 */
 	public LevelChunk(Level level, int x, int y, int width, int height) {
-		super(x, y, width, height);
+		super(x, y, width * level.tileWidth, height * level.tileHeight);
 
 		this.level = level;
 		this.tiles = new Tile[this.width][this.height];
@@ -58,8 +58,9 @@ public class LevelChunk extends PhysicsObject {
 		int visibleEndRow = viewPortY + viewPortHeight >= this.y + this.height ? this.height
 				: (viewPortY + viewPortHeight - this.y) / this.level.tileHeight;
 
-//		System.out.println("Visible tiles from (" + visibleStartColumn + ", " + visibleStartRow + ") to ("
-//				+ visibleEndColumn + ", " + visibleEndRow + ")");
+		// System.out.println("Visible tiles from (" + visibleStartColumn + ", "
+		// + visibleStartRow + ") to ("
+		// + visibleEndColumn + ", " + visibleEndRow + ")");
 
 		// Render each visible tile (determined by the viewPort Parameters)
 		for (int x = visibleStartColumn; x < visibleEndColumn; x++) {
@@ -84,5 +85,37 @@ public class LevelChunk extends PhysicsObject {
 	 */
 	public void setTile(Tile tile, int x, int y) {
 		this.tiles[x][y] = tile;
+	}
+
+	/**
+	 * Returns the tiles in the specified index - rectangle
+	 * 
+	 * @param x
+	 * @param y
+	 * @param width
+	 * @param height
+	 * @return
+	 */
+	public Tile[] getTiles(int x, int y, int width, int height) {
+		// Loop through every tile and add to array
+		Tile[] tiles = new Tile[width * height];
+		int tilesIndex = 0;
+		for (int j = y; j <= y + height; j++) {
+			// Break if we reached the end of our chunk
+			if (tiles.length <= j)
+				break;
+
+			for (int i = x; i <= x + width; i++) {
+				// Break if we reached the end of our chunk
+				if (tiles.length <= i)
+					break;
+
+				Tile tile = this.tiles[i][j];
+				if (tile != null)
+					tiles[tilesIndex++] = tile;
+			}
+		}
+
+		return tiles;
 	}
 }

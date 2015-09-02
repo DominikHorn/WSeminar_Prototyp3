@@ -6,11 +6,11 @@ import java.util.logging.*;
 import org.newdawn.slick.*;
 
 import com.prototype3.gameobjects.Player;
+import com.prototype3.gameobjects.tiles.Tile;
 
 public class Game extends BasicGame {
 	private static final int DISPLAY_WIDTH = 1280;
 	private static final int DISPLAY_HEIGHT = 720;
-	public static final float GRAVITY = 10f;
 
 	private Level level;
 	// Save player seperatly since he is a very special entity that must react
@@ -18,6 +18,10 @@ public class Game extends BasicGame {
 	private Player player;
 	private int cameraOriginX;
 	private int cameraOriginY;
+
+	// Key input table TODO: move to separate class
+	public static boolean isAKeyDown;
+	public static boolean isDKeyDown;
 
 	public Game(String gameName) {
 		super(gameName);
@@ -35,17 +39,30 @@ public class Game extends BasicGame {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		this.player = new Player(this.level.playerSpawnX, this.level.playerSpawnY, 75, 150);
 	}
 
 	@Override
 	public void update(GameContainer container, int delta) throws SlickException {
+		// Input handling
+		isAKeyDown = container.getInput().isKeyDown(Input.KEY_A);
+		isDKeyDown = container.getInput().isKeyDown(Input.KEY_D);
+
 		// pre physics engine
 		this.player.prePhysicsUpdate(delta);
 		this.level.prePhysicsUpdate(delta);
-		
-		// TODO: run physics engine
+
+		// Handle Player + tile collision!
+		// TODO: fix lazy solution
+		Tile[] tiles = this.level.getTilesInsideAABB(this.player.x - 300, this.player.y - 300, 600, 600);
+		for (Tile tile : tiles) {
+			// No more valid tiles will follow
+			if (tile == null)
+				break;
+
+			PhysicsEngine.resolveCollision(player, tile);
+		}
 
 		// after physics engine
 		this.player.afterPhysicsUpdate(delta);
@@ -62,11 +79,11 @@ public class Game extends BasicGame {
 		g.setColor(new Color(0.5f, 0.5f, 0.5f));
 		g.fillRect(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 		g.setColor(Color.white);
-		
+
 		// Do transformations
 		g.pushTransform();
 		g.translate(-this.cameraOriginX, -this.cameraOriginY);
-		
+
 		g.drawString("Howdy!", DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2);
 		this.player.render(g, cameraOriginX, cameraOriginY, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 		this.level.render(g, cameraOriginX, cameraOriginY, DISPLAY_WIDTH, DISPLAY_HEIGHT);

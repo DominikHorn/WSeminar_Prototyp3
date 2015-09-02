@@ -20,6 +20,7 @@ public class Level extends GameObject {
 	// public int chunkHeight;// TODO: add support for vertical chunks!
 	public int playerSpawnX;
 	public int playerSpawnY;
+	public int levelHeight;
 
 	/* FileFormat tags */
 	private static final String INFO_SEGMENT_TAG = "!Info";
@@ -157,7 +158,6 @@ public class Level extends GameObject {
 		levelSegment = levelSegment.replaceAll("\t", "");
 
 		// Determin basic level parameters
-		int levelHeight = 0;
 		int levelWidth = 0;
 		for (String line : levelSegment.split("\n"))
 
@@ -168,7 +168,7 @@ public class Level extends GameObject {
 			if (line.startsWith("\r") || line.equals(""))
 				continue;
 
-			levelHeight++;
+			this.levelHeight++;
 			levelWidth = line.length() > levelWidth ? line.length() : levelWidth;
 		}
 
@@ -213,8 +213,9 @@ public class Level extends GameObject {
 		for (int i = 0; i < chunkStrings.length; i++) {
 			// Allocate new Chunk. ypos is defined to be 0
 			LevelChunk chunk = new LevelChunk(this, i * this.chunkWidth * this.tileWidth, 0, this.chunkWidth,
-					levelHeight);// this.chunkHeight > 0 ? this.chunkHeight :
-									// levelHeight);
+					this.levelHeight);// this.chunkHeight > 0 ? this.chunkHeight
+										// :
+										// levelHeight);
 			String chunkData = chunkStrings[i];
 			int y = 0;
 
@@ -236,16 +237,19 @@ public class Level extends GameObject {
 						tile = null;
 					}
 
-//					System.out.print(String.format("(%5d, %5d); ", i * this.chunkWidth * this.tileWidth + x * this.tileWidth, y * this.tileHeight, this.tileWidth, this.tileHeight));
-//					System.out.print("(" + (tile == null ? null : "----") + "); ");
+					// System.out.print(String.format("(%5d, %5d); ", i *
+					// this.chunkWidth * this.tileWidth + x * this.tileWidth, y
+					// * this.tileHeight, this.tileWidth, this.tileHeight));
+					// System.out.print("(" + (tile == null ? null : "----") +
+					// "); ");
 					chunk.setTile(tile, x, y);
 				}
 
 				// Don't forget to increase y
 				y++;
-//				System.out.println("");
+				// System.out.println("");
 			}
-			
+
 			this.chunks.add(chunk);
 		}
 
@@ -274,5 +278,81 @@ public class Level extends GameObject {
 		for (LevelChunk chunk : this.chunks) {
 			chunk.render(g, viewPortX, viewPortY, viewPortWidth, viewPortHeight);
 		}
+	}
+
+	/**
+	 * Returns tiles inside of the specified rect for collision purposes
+	 * 
+	 * @param x
+	 * @param y
+	 * @param width
+	 * @param height
+	 * @return
+	 */
+	public Tile[] getTilesInsideAABB(int x, int y, int width, int height) {
+		// Allocate space for the tiles
+		Tile[] tiles = new Tile[(width / this.tileWidth) * (height / this.tileHeight)];
+		int tileIndex = 0;
+
+		// Figure out which chunks we need to ask for tiles: convert x to
+		// chunkIndex
+		int startChunkIndex = ((x / this.tileWidth) - 1) / this.chunkWidth;
+		int endChunkIndex = (((x + width) / this.tileWidth) - 1) / this.chunkWidth;
+
+		if (startChunkIndex < 0)
+			startChunkIndex = 0;
+		else if (startChunkIndex >= this.chunks.size())
+			startChunkIndex = this.chunks.size() - 1;
+
+		if (endChunkIndex < 0)
+			endChunkIndex = 0;
+		else if (endChunkIndex >= this.chunks.size())
+			endChunkIndex = this.chunks.size() - 1;
+
+		// Figure out which tiles we want
+		int firstTileX = ((x / this.tileWidth) - 1);
+		int firstTileY = ((y / this.tileHeight) - 1);
+		int lastTileX = (((x + width) / this.tileWidth) - 1);
+		int lastTileY = (((y + height) / this.tileHeight) - 1);
+		
+		if (firstTileX < 0)
+			firstTileX = 0;
+		if (firstTileX >= this.chunkWidth * this.chunks.size())
+			return tiles;
+
+		if (lastTileY < 0)
+			return tiles;
+		if (lastTileY >= this.levelHeight)
+			lastTileY = this.levelHeight - 1;
+
+		if (lastTileX < 0)
+			return tiles;
+		if (lastTileX >= this.chunkWidth * this.chunks.size())
+			lastTileX = this.chunkWidth * this.chunks.size() - 1;
+
+		if (firstTileY < 0)
+			firstTileY = 0;
+		if (firstTileY >= this.levelHeight)
+			return tiles;
+
+		// Loop through these chunks and ask for tiles
+		for (int i = startChunkIndex; i <= endChunkIndex; i++) {
+			// TODO: dirty
+			int startX = firstTileX - this.chunkWidth * i;
+			if (startX < 0)
+				startX = 0;
+
+			int stopX = lastTileX - this.chunkWidth * i;
+			if (stopX > this.chunkWidth)
+				stopX = this.chunkWidth;
+
+			Tile[] chunkTiles = this.chunks.get(i).getTiles(startX, firstTileY, stopX, lastTileY);
+			for (Tile tile : chunkTiles) {
+				if (tile != null)
+					tiles[tileIndex++] = tile;
+			}
+		}
+
+		return tiles;
 	}
 }

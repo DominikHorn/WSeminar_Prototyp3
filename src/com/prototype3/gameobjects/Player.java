@@ -5,15 +5,19 @@ import com.prototype3.main.Game;
 
 public class Player extends PhysicsObject {
 	private static final int IDLE_ANIMATION_TIME = 5000;
+	private static final float PLAYER_SPEED = 1;
 	private SpriteSheet playerSprites;
 	private Animation idleAnimation;
 	private Image playerImage;
 	private int idleTime;
+	private int gravityTimer;
+//	private int moveTimer;
 	private boolean playIdleAnimation;
 
 	public Player(int x, int y, int width, int height) throws SlickException {
 		super(x, y, width, height);
 
+		this.gravityTimer = 0;
 		this.idleTime = 0;
 		this.playIdleAnimation = false;
 		this.playerSprites = new SpriteSheet(new Image("assets/img/Player.png"), 128, 256);
@@ -30,8 +34,22 @@ public class Player extends PhysicsObject {
 
 	@Override
 	public void prePhysicsUpdate(int delta) throws SlickException {
+		// Global stuff
+		if (Game.isAKeyDown)
+			this.speedX -= PLAYER_SPEED;
+		if (Game.isDKeyDown)
+			this.speedX += PLAYER_SPEED;
+
 		// Update speed first
-//		this.speedY += Game.GRAVITY;
+		this.gravityTimer++;
+//		this.moveTimer++;
+		if (gravityTimer % 10 == 0) {
+			this.gravityTimer = 0;
+			this.speedY++;
+		}
+//		if (moveTimer % 10 == 0) {
+//			this.moveTimer = 0;
+//		}
 
 		// Update newX and newY according to speed
 		super.prePhysicsUpdate(delta);

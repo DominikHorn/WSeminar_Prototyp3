@@ -17,16 +17,22 @@ public class Tile extends PhysicsObject {
 	}
 
 	private Image sprite;
-	
+
 	public Tile(int x, int y, int width, int height) {
 		super(x, y, width, height);
-	
+
 		this.sprite = tileSpriteSheet.getSubImage(3, 3);
+		this.isStatic = true; // Tiles can generally not be moved
 	}
-	
+
 	@Override
 	public void render(Graphics g, int viewPortX, int viewPortY, int viewPortWidth, int viewPortHeight)
 			throws SlickException {
 		this.sprite.draw(this.x, this.y, this.width, this.height);
+	}
+
+	@Override
+	public String toString() {
+		return "(" + this.x + ", " + this.y + ", " + this.width + ", " + this.height + ")";
 	}
 }
