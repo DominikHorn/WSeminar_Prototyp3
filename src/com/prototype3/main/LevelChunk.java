@@ -34,7 +34,7 @@ public class LevelChunk extends PhysicsObject {
 		super(x, y, width * level.tileWidth, height * level.tileHeight);
 
 		this.level = level;
-		this.tiles = new Tile[this.width][this.height];
+		this.tiles = new Tile[width][height];
 	}
 
 	@Override
@@ -51,24 +51,24 @@ public class LevelChunk extends PhysicsObject {
 	public void render(Graphics g, int viewPortX, int viewPortY, int viewPortWidth, int viewPortHeight)
 			throws SlickException {
 		// Determine visible tiles
-		int visibleStartColumn = viewPortX <= this.x ? 0 : (viewPortX - this.x) / this.level.tileWidth;
-		int visibleEndColumn = viewPortX + viewPortWidth >= this.x + this.width ? this.width
-				: (viewPortX + viewPortWidth - this.x) / this.level.tileWidth;
-		int visibleStartRow = viewPortY <= this.y ? 0 : (viewPortY - this.y) / this.level.tileHeight;
-		int visibleEndRow = viewPortY + viewPortHeight >= this.y + this.height ? this.height
-				: (viewPortY + viewPortHeight - this.y) / this.level.tileHeight;
+		if (viewPortX + viewPortWidth < this.x || this.x + this.width < viewPortX || viewPortY + viewPortHeight < this.y
+				|| this.y + this.height < viewPortY) // We're not visible
+			return;
 
-		// System.out.println("Visible tiles from (" + visibleStartColumn + ", "
-		// + visibleStartRow + ") to ("
-		// + visibleEndColumn + ", " + visibleEndRow + ")");
+		// Figure out which tiles are visible
+		int visibleStartColumn = viewPortX <= this.x ? 0 : (viewPortX - this.x) / this.level.tileWidth;
+		int visibleEndColumn = viewPortX + viewPortWidth >= this.x + this.width ? this.tiles.length
+				: 1 + (viewPortX + viewPortWidth - this.x) / this.level.tileWidth;
+		int visibleStartRow = viewPortY <= this.y ? 0 : (viewPortY - this.y) / this.level.tileHeight;
+		int visibleEndRow = viewPortY + viewPortHeight >= this.y + this.height ? this.tiles[0].length
+				: 1 + (viewPortY + viewPortHeight - this.y) / this.level.tileHeight;
 
 		// Render each visible tile (determined by the viewPort Parameters)
 		for (int x = visibleStartColumn; x < visibleEndColumn; x++) {
 			for (int y = visibleStartRow; y < visibleEndRow; y++) {
 				Tile tile = null;
-				if ((tile = this.tiles[x][y]) != null) {
+				if ((tile = this.tiles[x][y]) != null)
 					tile.render(g, viewPortX, viewPortY, viewPortWidth, viewPortHeight);
-				}
 			}
 		}
 	}
@@ -98,16 +98,16 @@ public class LevelChunk extends PhysicsObject {
 	 */
 	public Tile[] getTiles(int x, int y, int width, int height) {
 		// Loop through every tile and add to array
-		Tile[] tiles = new Tile[width * height];
+		Tile[] tiles = new Tile[(width - x) * (height - y)];
 		int tilesIndex = 0;
 		for (int j = y; j <= y + height; j++) {
 			// Break if we reached the end of our chunk
-			if (tiles.length <= j)
+			if (j >= this.tiles[0].length)
 				break;
 
 			for (int i = x; i <= x + width; i++) {
 				// Break if we reached the end of our chunk
-				if (tiles.length <= i)
+				if (i >= this.tiles.length)
 					break;
 
 				Tile tile = this.tiles[i][j];

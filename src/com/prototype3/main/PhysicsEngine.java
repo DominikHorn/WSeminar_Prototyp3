@@ -14,11 +14,11 @@ public class PhysicsEngine {
 	 *            object to be tested against
 	 */
 	public static void resolveCollision(PhysicsObject object1, PhysicsObject object2) {
-		if (areRectsIntersecting(new Rect(object1.x + object1.speedX, object1.y, object1.width, object1.height),
-				new Rect(object2.x + object2.speedX, object2.y, object2.width, object2.height))) {
+		if (areRectsIntersecting(new Rect(object1.x + (int) object1.speedX, object1.y, object1.width, object1.height),
+				new Rect(object2.x + (int) object2.speedX, object2.y, object2.width, object2.height))) {
 			// X Collision -> Separate Objects.
-			int x1 = object1.x + object1.speedX;
-			int x2 = object2.x + object2.speedX;
+			int x1 = object1.x + (int) object1.speedX;
+			int x2 = object2.x + (int) object2.speedX;
 			int separation2 = x1 < x2 ? (x1 + object1.width + 1) - x2 : x1 > x2 ? (x2 + object2.width + 1) - x1 : 0;
 
 			if (object1.isStatic && object2.isStatic)
@@ -39,11 +39,11 @@ public class PhysicsEngine {
 				object2.speedX = 0;
 			}
 		}
-		if (areRectsIntersecting(new Rect(object1.x, object1.y + object1.speedY, object1.width, object1.height),
+		if (areRectsIntersecting(new Rect(object1.x, object1.y + (int) object1.speedY, object1.width, object1.height),
 				new Rect(object2.x, object2.y, object2.width, object2.height))) {
 			// Y Collision -> Separate Objects.
-			int y1 = object1.y + object1.speedY;
-			int y2 = object2.y + object2.speedY;
+			int y1 = object1.y + (int) object1.speedY;
+			int y2 = object2.y + (int) object2.speedY;
 			int separation2 = y1 < y2 ? (y1 + object1.height + 1) - y2 : y1 > y2 ? (y2 + object2.height + 1) - y1 : 0;
 
 			if (object1.isStatic && object2.isStatic)

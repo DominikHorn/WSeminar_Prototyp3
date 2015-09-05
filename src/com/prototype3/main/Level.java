@@ -237,17 +237,11 @@ public class Level extends GameObject {
 						tile = null;
 					}
 
-					// System.out.print(String.format("(%5d, %5d); ", i *
-					// this.chunkWidth * this.tileWidth + x * this.tileWidth, y
-					// * this.tileHeight, this.tileWidth, this.tileHeight));
-					// System.out.print("(" + (tile == null ? null : "----") +
-					// "); ");
 					chunk.setTile(tile, x, y);
 				}
 
 				// Don't forget to increase y
 				y++;
-				// System.out.println("");
 			}
 
 			this.chunks.add(chunk);
@@ -314,7 +308,7 @@ public class Level extends GameObject {
 		int firstTileY = ((y / this.tileHeight) - 1);
 		int lastTileX = (((x + width) / this.tileWidth) - 1);
 		int lastTileY = (((y + height) / this.tileHeight) - 1);
-		
+
 		if (firstTileX < 0)
 			firstTileX = 0;
 		if (firstTileX >= this.chunkWidth * this.chunks.size())
@@ -343,8 +337,10 @@ public class Level extends GameObject {
 				startX = 0;
 
 			int stopX = lastTileX - this.chunkWidth * i;
-			if (stopX > this.chunkWidth)
-				stopX = this.chunkWidth;
+			if (stopX >= this.chunkWidth)
+				stopX = this.chunkWidth - 1;
+			if (stopX <= 0)	// TODO: rework method without lazy fixes
+				stopX = 1;
 
 			Tile[] chunkTiles = this.chunks.get(i).getTiles(startX, firstTileY, stopX, lastTileY);
 			for (Tile tile : chunkTiles) {
@@ -352,6 +348,7 @@ public class Level extends GameObject {
 					tiles[tileIndex++] = tile;
 			}
 		}
+		System.out.println("\n");
 
 		return tiles;
 	}

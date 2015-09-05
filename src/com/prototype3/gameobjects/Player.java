@@ -5,19 +5,16 @@ import com.prototype3.main.Game;
 
 public class Player extends PhysicsObject {
 	private static final int IDLE_ANIMATION_TIME = 5000;
-	private static final float PLAYER_SPEED = 1;
+	private static final float PLAYER_SPEED = 0.3f;
 	private SpriteSheet playerSprites;
 	private Animation idleAnimation;
 	private Image playerImage;
 	private int idleTime;
-	private int gravityTimer;
-//	private int moveTimer;
 	private boolean playIdleAnimation;
 
 	public Player(int x, int y, int width, int height) throws SlickException {
 		super(x, y, width, height);
 
-		this.gravityTimer = 0;
 		this.idleTime = 0;
 		this.playIdleAnimation = false;
 		this.playerSprites = new SpriteSheet(new Image("assets/img/Player.png"), 128, 256);
@@ -34,22 +31,14 @@ public class Player extends PhysicsObject {
 
 	@Override
 	public void prePhysicsUpdate(int delta) throws SlickException {
-		// Global stuff
+		// Update speed first
 		if (Game.isAKeyDown)
 			this.speedX -= PLAYER_SPEED;
 		if (Game.isDKeyDown)
 			this.speedX += PLAYER_SPEED;
 
-		// Update speed first
-		this.gravityTimer++;
-//		this.moveTimer++;
-		if (gravityTimer % 10 == 0) {
-			this.gravityTimer = 0;
-			this.speedY++;
-		}
-//		if (moveTimer % 10 == 0) {
-//			this.moveTimer = 0;
-//		}
+		// Gravity
+		this.speedY += Game.GRAVITY;
 
 		// Update newX and newY according to speed
 		super.prePhysicsUpdate(delta);
@@ -86,16 +75,5 @@ public class Player extends PhysicsObject {
 			this.idleAnimation.draw(this.x, this.y, this.width, this.height);
 		else
 			this.playerImage.draw(this.x, this.y, this.width, this.height);
-	}
-
-	/**
-	 * Called when user presses keys that should move the player
-	 * 
-	 * @param direction
-	 *            the direction in which the player should move: 0 - stop moving
-	 *            1 - move left 2 - move right
-	 */
-	public void moveInput(int direction) {
-
 	}
 }

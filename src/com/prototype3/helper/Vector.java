@@ -20,12 +20,9 @@ public class Vector {
 		this.y /= i;
 		return this;
 	}
-<<<<<<< Updated upstream
-=======
-	
+
 	@Override
 	public String toString() {
 		return "(" + this.x + ", " + this.y + ")";
 	}
->>>>>>> Stashed changes
 }

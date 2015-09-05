@@ -8,8 +8,8 @@ public class PhysicsObject extends GameObject {
 	public int y;
 	public int width;
 	public int height;
-	public int speedX;
-	public int speedY;
+	public float speedX;
+	public float speedY;
 	public boolean isStatic;
 
 	public PhysicsObject(int x, int y, int width, int height) {

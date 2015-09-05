@@ -9,6 +9,8 @@ import com.prototype3.gameobjects.Player;
 import com.prototype3.gameobjects.tiles.Tile;
 
 public class Game extends BasicGame {
+	public static final float GRAVITY = 0.2f;
+
 	private static final int DISPLAY_WIDTH = 1280;
 	private static final int DISPLAY_HEIGHT = 720;
 
@@ -75,6 +77,7 @@ public class Game extends BasicGame {
 
 	@Override
 	public void render(GameContainer container, Graphics g) throws SlickException {
+//		long now = System.nanoTime();
 		// clear manually with custom color
 		g.setColor(new Color(0.5f, 0.5f, 0.5f));
 		g.fillRect(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
@@ -84,12 +87,13 @@ public class Game extends BasicGame {
 		g.pushTransform();
 		g.translate(-this.cameraOriginX, -this.cameraOriginY);
 
-		g.drawString("Howdy!", DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2);
 		this.player.render(g, cameraOriginX, cameraOriginY, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 		this.level.render(g, cameraOriginX, cameraOriginY, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 
 		// Return to previous transform state
 		g.popTransform();
+
+//		System.out.println("Took " + (System.nanoTime() - now) + " nanoseconds to finish one drawing");
 	}
 
 	public static void main(String argv[]) {
