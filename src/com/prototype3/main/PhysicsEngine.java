@@ -46,6 +46,12 @@ public class PhysicsEngine {
 			int y2 = object2.y + (int) object2.speedY;
 			int separation2 = y1 < y2 ? (y1 + object1.height + 1) - y2 : y1 > y2 ? (y2 + object2.height + 1) - y1 : 0;
 
+			// TODO: fix cheap and messy implementation
+			if (separation2 > 0)
+				object1.onGround = true;
+			else
+				object2.onGround = true;
+			
 			if (object1.isStatic && object2.isStatic)
 				System.err.println("Two static objects colliding: (" + object1 + ", " + object2 + ")");
 

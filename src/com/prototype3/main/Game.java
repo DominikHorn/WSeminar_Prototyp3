@@ -9,7 +9,7 @@ import com.prototype3.gameobjects.Player;
 import com.prototype3.gameobjects.tiles.Tile;
 
 public class Game extends BasicGame {
-	public static final float GRAVITY = 0.2f;
+	public static final float GRAVITY = 1f;
 
 	private static final int DISPLAY_WIDTH = 1280;
 	private static final int DISPLAY_HEIGHT = 720;
@@ -22,8 +22,10 @@ public class Game extends BasicGame {
 	private int cameraOriginY;
 
 	// Key input table TODO: move to separate class
+	public static boolean isWKeyDown;
 	public static boolean isAKeyDown;
 	public static boolean isDKeyDown;
+	public static boolean isSpaceKeyDown;
 
 	public Game(String gameName) {
 		super(gameName);
@@ -42,14 +44,16 @@ public class Game extends BasicGame {
 			e.printStackTrace();
 		}
 
-		this.player = new Player(this.level.playerSpawnX, this.level.playerSpawnY, 75, 150);
+		this.player = new Player(this.level.playerSpawnX, this.level.playerSpawnY, 75, 145);
 	}
 
 	@Override
 	public void update(GameContainer container, int delta) throws SlickException {
 		// Input handling
+		isWKeyDown = container.getInput().isKeyDown(Input.KEY_W);
 		isAKeyDown = container.getInput().isKeyDown(Input.KEY_A);
 		isDKeyDown = container.getInput().isKeyDown(Input.KEY_D);
+		isSpaceKeyDown = container.getInput().isKeyDown(Input.KEY_SPACE);
 
 		// pre physics engine
 		this.player.prePhysicsUpdate(delta);
@@ -77,7 +81,6 @@ public class Game extends BasicGame {
 
 	@Override
 	public void render(GameContainer container, Graphics g) throws SlickException {
-//		long now = System.nanoTime();
 		// clear manually with custom color
 		g.setColor(new Color(0.5f, 0.5f, 0.5f));
 		g.fillRect(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
@@ -92,8 +95,6 @@ public class Game extends BasicGame {
 
 		// Return to previous transform state
 		g.popTransform();
-
-//		System.out.println("Took " + (System.nanoTime() - now) + " nanoseconds to finish one drawing");
 	}
 
 	public static void main(String argv[]) {

@@ -339,8 +339,12 @@ public class Level extends GameObject {
 			int stopX = lastTileX - this.chunkWidth * i;
 			if (stopX >= this.chunkWidth)
 				stopX = this.chunkWidth - 1;
-			if (stopX <= 0)	// TODO: rework method without lazy fixes
+
+			// Lazy fix. TODO: rework method without lazy fixes
+			if (stopX <= 0)
 				stopX = 1;
+			if (startX >= this.chunkWidth - 1)
+				startX = this.chunkWidth - 2;
 
 			Tile[] chunkTiles = this.chunks.get(i).getTiles(startX, firstTileY, stopX, lastTileY);
 			for (Tile tile : chunkTiles) {
@@ -348,7 +352,6 @@ public class Level extends GameObject {
 					tiles[tileIndex++] = tile;
 			}
 		}
-		System.out.println("\n");
 
 		return tiles;
 	}

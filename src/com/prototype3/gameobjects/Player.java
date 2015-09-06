@@ -32,12 +32,14 @@ public class Player extends PhysicsObject {
 	@Override
 	public void prePhysicsUpdate(int delta) throws SlickException {
 		// Update speed first
+		if (this.onGround && (Game.isWKeyDown || Game.isSpaceKeyDown))
+			this.speedY -= 20f;
 		if (Game.isAKeyDown)
 			this.speedX -= PLAYER_SPEED;
 		if (Game.isDKeyDown)
 			this.speedX += PLAYER_SPEED;
 
-		// Gravity
+		// Gravity TODO: speed limit!
 		this.speedY += Game.GRAVITY;
 
 		// Update newX and newY according to speed

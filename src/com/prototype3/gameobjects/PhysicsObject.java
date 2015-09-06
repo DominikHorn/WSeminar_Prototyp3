@@ -11,6 +11,7 @@ public class PhysicsObject extends GameObject {
 	public float speedX;
 	public float speedY;
 	public boolean isStatic;
+	public boolean onGround;
 
 	public PhysicsObject(int x, int y, int width, int height) {
 		this.x = x;
@@ -22,7 +23,8 @@ public class PhysicsObject extends GameObject {
 
 	@Override
 	public void prePhysicsUpdate(int delta) throws SlickException {
-		// Do nothing. Subclasses: F.e. update speed
+		// Subclasses: F.e. update speed
+		this.onGround = false;	// Reset OnGround
 	}
 
 	@Override
