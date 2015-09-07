@@ -5,7 +5,8 @@ import com.prototype3.main.Game;
 
 public class Player extends PhysicsObject {
 	private static final int IDLE_ANIMATION_TIME = 5000;
-	private static final float PLAYER_SPEED = 0.3f;
+	private static final float PLAYER_SPEED = 1f;
+	private static final float PLAYER_MAX_SPEED = 15f;
 	private SpriteSheet playerSprites;
 	private Animation idleAnimation;
 	private Image playerImage;
@@ -32,12 +33,28 @@ public class Player extends PhysicsObject {
 	@Override
 	public void prePhysicsUpdate(int delta) throws SlickException {
 		// Update speed first
-		if (this.onGround && (Game.isWKeyDown || Game.isSpaceKeyDown))
+		if (this.onGround && Game.isUpKeyDown)
 			this.speedY -= 20f;
-		if (Game.isAKeyDown)
-			this.speedX -= PLAYER_SPEED;
-		if (Game.isDKeyDown)
-			this.speedX += PLAYER_SPEED;
+		
+		if (Game.isLeftKeyDown) {
+			if (this.speedX > -PLAYER_MAX_SPEED) {
+				this.speedX -= PLAYER_SPEED;
+			} else {
+				this.speedX = -PLAYER_MAX_SPEED;
+			}
+		} else if (this.onGround && this.speedX < 0) {
+			this.speedX += this.speedX < -PLAYER_SPEED ? PLAYER_SPEED : -this.speedX;
+		}
+
+		if (Game.isRightKeyDown) {
+			if (this.speedX < PLAYER_MAX_SPEED) {
+				this.speedX += PLAYER_SPEED;
+			} else {
+				this.speedX = PLAYER_MAX_SPEED;
+			}
+		} else if (this.onGround && this.speedX > 0) {
+			this.speedX -= this.speedX > PLAYER_SPEED ? PLAYER_SPEED : this.speedX;
+		}
 
 		// Gravity TODO: speed limit!
 		this.speedY += Game.GRAVITY;

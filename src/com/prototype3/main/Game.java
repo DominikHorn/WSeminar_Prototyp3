@@ -22,10 +22,9 @@ public class Game extends BasicGame {
 	private int cameraOriginY;
 
 	// Key input table TODO: move to separate class
-	public static boolean isWKeyDown;
-	public static boolean isAKeyDown;
-	public static boolean isDKeyDown;
-	public static boolean isSpaceKeyDown;
+	public static boolean isUpKeyDown;
+	public static boolean isLeftKeyDown;
+	public static boolean isRightKeyDown;
 
 	public Game(String gameName) {
 		super(gameName);
@@ -50,10 +49,17 @@ public class Game extends BasicGame {
 	@Override
 	public void update(GameContainer container, int delta) throws SlickException {
 		// Input handling
-		isWKeyDown = container.getInput().isKeyDown(Input.KEY_W);
-		isAKeyDown = container.getInput().isKeyDown(Input.KEY_A);
-		isDKeyDown = container.getInput().isKeyDown(Input.KEY_D);
-		isSpaceKeyDown = container.getInput().isKeyDown(Input.KEY_SPACE);
+		isLeftKeyDown = container.getInput().isKeyDown(Input.KEY_A) || container.getInput().isKeyDown(Input.KEY_LEFT);
+		isRightKeyDown = container.getInput().isKeyDown(Input.KEY_D) || container.getInput().isKeyDown(Input.KEY_RIGHT);
+		isUpKeyDown = container.getInput().isKeyDown(Input.KEY_SPACE) || container.getInput().isKeyDown(Input.KEY_W) || container.getInput().isKeyDown(Input.KEY_UP);
+		
+		// TODO: Put in different class
+		if (container.getInput().isKeyDown(Input.KEY_F1)) {
+			this.player.speedX = 0;
+			this.player.speedY = 0;
+			this.player.x = this.level.playerSpawnX;
+			this.player.y = this.level.playerSpawnY;
+		}
 
 		// pre physics engine
 		this.player.prePhysicsUpdate(delta);
@@ -110,6 +116,7 @@ public class Game extends BasicGame {
 			AppGameContainer appgc;
 			appgc = new AppGameContainer(new Game("WSeminar-Protoype3"));
 			appgc.setDisplayMode(DISPLAY_WIDTH, DISPLAY_HEIGHT, false);
+			appgc.setAlwaysRender(true);
 			appgc.start();
 		} catch (SlickException ex) {
 			Logger.getLogger(Game.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);

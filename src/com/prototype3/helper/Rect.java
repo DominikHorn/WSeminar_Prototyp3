@@ -12,4 +12,9 @@ public class Rect {
 		this.width = width;
 		this.height = height;
 	}
+	
+	@Override
+	public String toString() {
+		return "(" + this.x + ", " + this.y + ", " + this.width + ", " + this.height + ")";
+	}
 }

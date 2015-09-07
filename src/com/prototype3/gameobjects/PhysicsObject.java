@@ -12,6 +12,7 @@ public class PhysicsObject extends GameObject {
 	public float speedY;
 	public boolean isStatic;
 	public boolean onGround;
+	public boolean usesSimpleCollision;
 
 	public PhysicsObject(int x, int y, int width, int height) {
 		this.x = x;
@@ -19,6 +20,8 @@ public class PhysicsObject extends GameObject {
 		this.width = width;
 		this.height = height;
 		this.isStatic = false; // Objects can by default be moved
+		this.onGround = false;
+		this.usesSimpleCollision = true;
 	}
 
 	@Override
