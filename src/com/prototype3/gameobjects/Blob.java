@@ -2,14 +2,21 @@ package com.prototype3.gameobjects;
 
 import org.newdawn.slick.*;
 
+import com.prototype3.helper.Maths;
+import com.prototype3.helper.Vector2f;
 import com.prototype3.main.Game;
+import com.prototype3.main.Level;
 
 public class Blob extends PhysicsObject {
-	private static final float BLOB_JUMP_THRUST = 17f;
-	
+	private static final float BLOB_JUMP_THRUST = 30f;
+
 	private SpriteSheet blobSprites;
 	private Animation jumpingAnimation;
 	private Image blobImage;
+
+	/** AI */
+	private int aiTimer = 0;
+	private boolean playerVisible = false;
 
 	public Blob(int x, int y, int width, int height) throws SlickException {
 		super(x, y, width, height);
@@ -32,6 +39,18 @@ public class Blob extends PhysicsObject {
 		// Gravity TODO: speed limit!
 		this.speedY += Game.GRAVITY;
 
+		if (this.onGround)
+			this.speedX = 0;
+
+		// Player visible -> Try jumping towards his position
+		if (this.playerVisible)
+			if (Maths.distanceX(Game.player, this) > 15f)
+				this.speedX = Game.player.x < this.x ? -10f : 10f;
+			else {
+				this.speedX = 0;
+				this.x = Game.player.x;
+			}
+
 		super.prePhysicsUpdate(delta);
 	}
 
@@ -39,15 +58,24 @@ public class Blob extends PhysicsObject {
 	public void afterPhysicsUpdate(int delta) throws SlickException {
 		super.afterPhysicsUpdate(delta);
 
+		// TODO: only jump when you see player
+
 		// Jump again if we are onGround and our animation has finished
 		if (this.onGround && this.jumpingAnimation.isStopped())
 			this.jumpingAnimation.restart();
-		
+
 		// As soon as the vertical thrust part of the animation plays jump
 		if (this.jumpingAnimation.getFrame() == 2) {
 			this.speedY = -BLOB_JUMP_THRUST;
 		}
-		
+
+		// Can we see the player? Ask every 2 ticks
+		if (aiTimer++ % 2 == 0) {
+			playerVisible = false;
+			if (Level.isVisible(Game.player, new Vector2f(this.x + this.width / 2, this.y + this.height / 2)))
+				playerVisible = true;
+		}
+
 		// Constantly update our jump animation
 		this.jumpingAnimation.update(delta);
 	}

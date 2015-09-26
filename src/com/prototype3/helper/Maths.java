@@ -1,5 +1,7 @@
 package com.prototype3.helper;
 
+import com.prototype3.gameobjects.PhysicsObject;
+
 public class Maths {
 	/**
 	 * Will cast a ray from rayFoot through rayTip at the Line "segment"
@@ -53,5 +55,9 @@ public class Maths {
 			return null;
 		// Return the POINT OF INTERSECTION
 		return new Vector3f(r_px + r_dx * T1, r_py + r_dy * T1, T1);
+	}
+
+	public static float distanceX(PhysicsObject object1, PhysicsObject object2) {
+		return (float) Math.sqrt((object1.x - object2.x) * (object1.x - object2.x));
 	}
 }

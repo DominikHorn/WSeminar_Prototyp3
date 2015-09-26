@@ -35,7 +35,7 @@ public class Game extends BasicGame {
 
 	// Save player seperatly since he is a very special entity that must react
 	// to key input etc
-	private Player player;
+	public static Player player;
 
 	// Camera stuff
 	private int cameraOriginX;
@@ -46,6 +46,8 @@ public class Game extends BasicGame {
 	public static boolean isRightKeyDown;
 	public static boolean isUpKeyDown;
 	public static boolean isDuckKeyDown;
+	
+	public static boolean RAY_DEBUG_MODE_ENABLED = false;
 
 	public Game(String gameName) {
 		super(gameName);
@@ -70,7 +72,7 @@ public class Game extends BasicGame {
 		}
 
 		// Setup player
-		this.player = new Player(this.level.playerSpawnX, this.level.playerSpawnY, 74, 149);
+		player = new Player(this.level.playerSpawnX, this.level.playerSpawnY, 74, 149);
 
 		// Setup entities
 		for (PhysicsObject object : this.level.entities) {
@@ -89,21 +91,24 @@ public class Game extends BasicGame {
 		isUpKeyDown = container.getInput().isKeyDown(Input.KEY_SPACE) || container.getInput().isKeyDown(Input.KEY_W)
 				|| container.getInput().isKeyDown(Input.KEY_UP);
 		isDuckKeyDown = container.getInput().isKeyDown(Input.KEY_S) || container.getInput().isKeyDown(Input.KEY_DOWN);
-
+		
+		if (container.getInput().isKeyPressed(Input.KEY_F2))
+			RAY_DEBUG_MODE_ENABLED = !RAY_DEBUG_MODE_ENABLED;
+		
 		// TODO: Put in different class
 		if (container.getInput().isKeyDown(Input.KEY_F1)) {
-			this.player.speedX = 0;
-			this.player.speedY = 0;
-			this.player.x = this.level.playerSpawnX;
-			this.player.y = this.level.playerSpawnY;
+			player.speedX = 0;
+			player.speedY = 0;
+			player.x = this.level.playerSpawnX;
+			player.y = this.level.playerSpawnY;
 		}
 
 		// pre physics player + level
-		this.player.prePhysicsUpdate(delta);
-		this.level.prePhysicsUpdate(delta);
+		player.prePhysicsUpdate(delta);
+		level.prePhysicsUpdate(delta);
 
 		// Handle Player + tile collision!
-		ArrayList<Tile> nearPlayerTiles = this.level.getTilesInsideAABB(this.player.x - 300, this.player.y - 300, 600,
+		ArrayList<Tile> nearPlayerTiles = this.level.getTilesInsideAABB(player.x - 300, player.y - 300, 600,
 				600);
 		for (Tile tile : nearPlayerTiles) {
 			// No more valid tiles will follow
@@ -114,20 +119,20 @@ public class Game extends BasicGame {
 		}
 
 		// after physics player + level
-		this.player.afterPhysicsUpdate(delta);
+		player.afterPhysicsUpdate(delta);
 		this.level.afterPhysicsUpdate(delta);
 
 		// Update camera
-		this.cameraOriginX = this.player.x - DISPLAY_WIDTH / 2 + this.player.width / 2;
-		this.cameraOriginY = this.player.y - DISPLAY_HEIGHT / 2 + this.player.height / 2;
+		this.cameraOriginX = player.x - DISPLAY_WIDTH / 2 + player.width / 2;
+		this.cameraOriginY = player.y - DISPLAY_HEIGHT / 2 + player.height / 2;
 
 		// Update visible entities
 		this.visibleEntities.clear();
 
-		// pre physics entities
+		// pre physics entities TODO: rework (Blob can get "stuck" while jumping if he leaves the screen -> hangs in air without ever coming back down
 		for (PhysicsObject object : this.entities) {
 			if (PhysicsEngine.areRectsIntersecting(new Rect(object.x, object.y, object.width, object.height),
-					new Rect(cameraOriginX, cameraOriginY, DISPLAY_WIDTH, DISPLAY_HEIGHT))) {
+					new Rect(cameraOriginX, 0, DISPLAY_WIDTH, cameraOriginY + DISPLAY_HEIGHT))) {
 				// Only update entities that are visible on screen
 				object.prePhysicsUpdate(delta);
 
@@ -136,12 +141,8 @@ public class Game extends BasicGame {
 			}
 		}
 
-		// Get tiles in visible area
-		ArrayList<Tile> visibleTiles = this.level.getTilesInsideAABB(cameraOriginX, cameraOriginY, DISPLAY_WIDTH,
-				DISPLAY_HEIGHT);
-
 		// Resolve visible entity + visible tile collision
-		for (Tile tile : visibleTiles) {
+		for (Tile tile : Level.visibleTiles) {
 			// No more valid tiles will follow
 			if (tile == null)
 				break;
@@ -160,7 +161,7 @@ public class Game extends BasicGame {
 	@Override
 	public void render(GameContainer container, Graphics g) throws SlickException {
 		// clear manually with custom color
-		g.setColor(new Color(0.2f, 0.3f, 0.5f));
+		g.setColor(new Color(0.0f, 0.0f, 0.0f));
 		g.fillRect(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 		g.setColor(Color.white);
 
@@ -170,7 +171,7 @@ public class Game extends BasicGame {
 
 		// Render Background first
 		this.level.render(g,
-				new Vector2f(this.player.x + this.player.width / 2, this.player.y + this.player.height / 8),
+				new Vector2f(player.x + player.width / 2, player.y + player.height / 8),
 				cameraOriginX, cameraOriginY, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 
 		// Render Entities
@@ -179,7 +180,7 @@ public class Game extends BasicGame {
 		}
 
 		// Render player last
-		this.player.render(g, cameraOriginX, cameraOriginY, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+		player.render(g, cameraOriginX, cameraOriginY, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 
 		// Return to previous transform state
 		g.popTransform();

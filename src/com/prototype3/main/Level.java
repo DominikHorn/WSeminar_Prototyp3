@@ -19,12 +19,11 @@ import com.prototype3.helper.Vector2f;
 import com.prototype3.helper.Vector3f;
 
 public class Level extends GameObject {
-	/* Info default values TODO: accessors */
+	/* Info default values */
 	public String levelName;
 	public int tileWidth;
 	public int tileHeight;
 	public int chunkWidth;
-	// public int chunkHeight;// TODO: add support for vertical chunks!
 	public int playerSpawnX;
 	public int playerSpawnY;
 	public int levelHeight;
@@ -48,6 +47,9 @@ public class Level extends GameObject {
 	// Each level consists of n-number chunks (Vertical strips of tiles)
 	private ArrayList<LevelChunk> chunks;
 
+	// All tiles currently visible, updated each frame
+	public static ArrayList<Tile> visibleTiles;
+
 	public Level(String filePath) throws IOException {
 		this.chunks = new ArrayList<>();
 		this.entities = new ArrayList<>();
@@ -61,7 +63,6 @@ public class Level extends GameObject {
 		this.playerSpawnX = 0;
 		this.playerSpawnY = 0;
 
-		// TODO: load level from file
 		this.loadLevel(filePath);
 	}
 
@@ -121,19 +122,13 @@ public class Level extends GameObject {
 		levelSegment = everything.substring(levelSegmentStart,
 				everything.substring(levelSegmentStart).indexOf(LEVEL_SEGMENT_TAG) + levelSegmentStart);
 
-		// System.out.println("Parsing step 2 done:\nInfo:\n" + infoSegment +
-		// levelSegment);
-
 		// Remove white spaces & tabs from info segment
 		infoSegment = infoSegment.replaceAll(" ", "");
 		infoSegment = infoSegment.replaceAll("\t", "");
 
-		// System.out.println("Parsing step 3 done:\nInfo:\n" + infoSegment);
-
 		// Parse info segment. Note: We remove "\r" from each info because new
 		// Integer() will throw an unchecked exception elsewise
 		for (String line : infoSegment.split("\n")) {
-			// TODO: dirty fix
 			line = line.replaceAll("\n", "");
 			line = line.replaceAll("\r", "");
 
@@ -150,31 +145,20 @@ public class Level extends GameObject {
 			} else if (line.startsWith(INFO_SEGMENT_KEY_CHUNKWIDTH)) {
 				this.chunkWidth = new Integer(
 						line.substring(INFO_SEGMENT_KEY_CHUNKWIDTH.length()).replaceAll("\r", ""));
-			}
-			// else if (line.startsWith(INFO_SEGMENT_KEY_CHUNKHEIGHT)) {
-			// this.chunkHeight = new Integer(
-			// line.substring(INFO_SEGMENT_KEY_CHUNKHEIGHT.length()).replaceAll("\r",
-			// ""));
-			// }
-			else {
+			} else {
 				System.err.println("Unrecognized InfoSegment line in \"" + filePath + "\": " + line);
 			}
 		}
-
-		// System.out.println("Parsing step 4 done:\nInfo:\n" + this.levelName +
-		// "\n" + this.tileWidth + "\n" + this.tileHeight + "\n" +
-		// this.chunkWidth + "\n" + this.chunkHeight);
 
 		// Remove white spaces & tabs
 		levelSegment = levelSegment.replaceAll(" ", "");
 		levelSegment = levelSegment.replaceAll("\t", "");
 
-		// Determin basic level parameters
+		// Determine basic level parameters
 		int levelWidth = 0;
 		for (String line : levelSegment.split("\n"))
 
 		{
-			// TODO: dirty fix
 			line = line.replaceAll("\n", "");
 			line = line.replaceAll("\r", "");
 			if (line.startsWith("\r") || line.equals(""))
@@ -200,7 +184,6 @@ public class Level extends GameObject {
 		String line : levelSegment.split("\n"))
 
 		{
-			// TODO: dirty fix
 			line = line.replaceAll("\n", "");
 			line = line.replaceAll("\r", "");
 			if (line.startsWith("\r") || line.equals(""))
@@ -213,13 +196,6 @@ public class Level extends GameObject {
 				chunkStrings[i] = chunkStrings[i] + line.substring(chunkBeginIndex, chunkEndIndex) + "\n";
 			}
 		}
-
-		// System.out.println("Parsing step 5 done:\nLevel(" + levelWidth + ", "
-		// + levelHeight + "); Chunks("
-		// + chunkStrings.length + "):");
-		// for (int i = 0; i < chunkStrings.length; i++) {
-		// System.out.println(chunkStrings[i] + "\n");
-		// }
 
 		// Parse each individual chunk
 		for (int i = 0; i < chunkStrings.length; i++) {
@@ -271,18 +247,12 @@ public class Level extends GameObject {
 
 	@Override
 	public void prePhysicsUpdate(int delta) throws SlickException {
-		// Update chunks
-		for (LevelChunk chunk : this.chunks) {
-			chunk.prePhysicsUpdate(delta);
-		}
+		// Update chunks TODO: implement
 	}
 
 	@Override
 	public void afterPhysicsUpdate(int delta) throws SlickException {
-		// Update chunks
-		for (LevelChunk chunk : this.chunks) {
-			chunk.afterPhysicsUpdate(delta);
-		}
+		// Update chunks TODO: implement
 	}
 
 	/**
@@ -299,10 +269,10 @@ public class Level extends GameObject {
 	public void render(Graphics g, Vector2f cameraFoot, int viewPortX, int viewPortY, int viewPortWidth,
 			int viewPortHeight) throws SlickException {
 		// Find visible tiles
-		ArrayList<Tile> visibleTiles = this.getTilesInsideAABB(viewPortX, viewPortY, viewPortWidth + this.tileWidth,
+		visibleTiles = this.getTilesInsideAABB(viewPortX, viewPortY, viewPortWidth + this.tileWidth,
 				viewPortHeight + this.tileHeight);
 
-		if (cameraFoot != null)
+		if (Game.RAY_DEBUG_MODE_ENABLED && cameraFoot != null)
 			// Get all Line segments
 			visibleTiles = this.getVisibleFromFoot(cameraFoot, visibleTiles);
 
@@ -312,30 +282,33 @@ public class Level extends GameObject {
 					tile.render(g, viewPortX, viewPortY, viewPortWidth, viewPortHeight);
 			}
 
-		// Render rays
-		for (Vector2f rayTip : this.rayTips) {
-			if (rayTip == null)
-				continue;
-			g.setLineWidth(1);
-			g.setColor(Color.white);
-			g.drawLine((float) cameraFoot.x, (float) cameraFoot.y, (float) rayTip.x, (float) rayTip.y);
-		}
+		if (Game.RAY_DEBUG_MODE_ENABLED) {
+			// Render rays
+			for (Vector2f rayTip : this.rayTips) {
+				if (rayTip == null)
+					continue;
+				g.setLineWidth(1);
+				g.setColor(Color.white);
+				g.drawLine((float) cameraFoot.x, (float) cameraFoot.y, (float) rayTip.x, (float) rayTip.y);
+			}
 
-		// Render intersects
-		for (Vector3f rayIntersect : this.intersects) {
-			if (rayIntersect == null)
-				continue;
-			g.setColor(Color.red);
-			g.fillOval(rayIntersect.x - 5, rayIntersect.y - 5, 10, 10);
-		}
+			// Render intersects
+			for (Vector3f rayIntersect : this.intersects) {
+				if (rayIntersect == null)
+					continue;
+				g.setColor(Color.red);
+				g.fillOval(rayIntersect.x - 5, rayIntersect.y - 5, 10, 10);
+			}
 
-		// Render line segments
-		for (LineSegment segment : this.lineSegments) {
-			if (segment == null)
-				continue;
-			g.setColor(Color.green);
-			g.setLineWidth(2);
-			g.drawLine((float) segment.foot.x, (float) segment.foot.y, (float) segment.tip.x, (float) segment.tip.y);
+			// Render line segments
+			for (LineSegment segment : this.lineSegments) {
+				if (segment == null)
+					continue;
+				g.setColor(Color.green);
+				g.setLineWidth(2);
+				g.drawLine((float) segment.foot.x, (float) segment.foot.y, (float) segment.tip.x,
+						(float) segment.tip.y);
+			}
 		}
 	}
 
@@ -404,7 +377,6 @@ public class Level extends GameObject {
 
 		// Loop through these chunks and ask for tiles
 		for (int i = startChunkIndex; i <= endChunkIndex; i++) {
-			// TODO: dirty
 			int startX = firstTileX - this.chunkWidth * i;
 			if (startX < 0)
 				startX = 0;
@@ -413,7 +385,6 @@ public class Level extends GameObject {
 			if (stopX >= this.chunkWidth)
 				stopX = this.chunkWidth - 1;
 
-			// Lazy fix. TODO: rework method without lazy fixes
 			if (stopX <= 0)
 				stopX = 1;
 			if (startX >= this.chunkWidth - 1)
@@ -434,7 +405,7 @@ public class Level extends GameObject {
 	ArrayList<Vector3f> intersects = new ArrayList<>();
 	ArrayList<LineSegment> lineSegments = new ArrayList<>();
 
-	public ArrayList<Tile> getVisibleFromFoot(Vector2f foot, ArrayList<Tile> visibleTiles) {
+	private ArrayList<Tile> getVisibleFromFoot(Vector2f foot, ArrayList<Tile> visibleTiles) {
 		lineSegments.clear();
 		intersects.clear();
 		rayTips.clear();
@@ -493,5 +464,60 @@ public class Level extends GameObject {
 		}
 
 		return visibleTiles;
+	}
+
+	/**
+	 * Whether or not the object is visible from RayFoot
+	 * 
+	 * @param object
+	 * @param RayFoot
+	 * @return
+	 */
+	public static boolean isVisible(PhysicsObject object, Vector2f rayFoot) {
+		// Calculate rays to be sent
+		ArrayList<Vector2f> rayTips = new ArrayList<>();
+		rayTips.add(new Vector2f(object.x + object.width / 2, object.y));
+		rayTips.add(new Vector2f(object.x + object.width / 2, object.y + object.height / 2));
+		rayTips.add(new Vector2f(object.x + object.width / 2, object.y + object.height));
+
+		// Get all line segments
+		for (Vector2f rayTip : rayTips) {
+			Vector3f closestIntersection = null;
+			for (Tile tile : visibleTiles) {
+				for (LineSegment segment : tile.getOuterLineSegments()) {
+					// Ray check for each segment
+					Vector3f intersection = Maths.getRayImpactPoint(rayFoot, rayTip, segment.foot, segment.tip);
+					if (intersection == null)
+						continue;
+					if (closestIntersection == null || intersection.z < closestIntersection.z) {
+						closestIntersection = intersection;
+					}
+				}
+			}
+
+			// No intersection at all -> Object is surely visible
+			if (closestIntersection == null)
+				return true;
+
+			// Calculate vector of closestIntersection
+			closestIntersection.x = closestIntersection.x - rayFoot.x;
+			closestIntersection.y = closestIntersection.y - rayFoot.y;
+
+			// Calculate vector of object
+			Vector2f rayToObject = new Vector2f((object.x + object.width / 2) - rayFoot.x,
+					(object.y + object.height / 2) - rayFoot.y);
+
+			// Calculate magnitudes
+			float magnitude_intersection = (float) Math.sqrt(
+					closestIntersection.x * closestIntersection.x + closestIntersection.y * closestIntersection.y);
+			float magnitude_rayToObject = (float) Math
+					.sqrt(rayToObject.x * rayToObject.x + rayToObject.y * rayToObject.y);
+
+			// Object is closer than the nearest intersection -> Visible
+			if (magnitude_rayToObject < magnitude_intersection)
+				return true;
+		}
+
+		return false;
 	}
 }
