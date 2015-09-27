@@ -23,10 +23,10 @@ public class Level extends GameObject {
 	public String levelName;
 	public int tileWidth;
 	public int tileHeight;
-	public int chunkWidth;
+	public int levelWidth;
+	public int levelHeight;
 	public int playerSpawnX;
 	public int playerSpawnY;
-	public int levelHeight;
 
 	// Loaded entities, [Game] will sort and add them to it's own data
 	// structures
@@ -40,26 +40,20 @@ public class Level extends GameObject {
 	private static final String INFO_SEGMENT_KEY_NAME = "Name:";
 	private static final String INFO_SEGMENT_KEY_TILEWIDTH = "TileWidth:";
 	private static final String INFO_SEGMENT_KEY_TILEHEIGHT = "TileHeight:";
-	private static final String INFO_SEGMENT_KEY_CHUNKWIDTH = "ChunkWidth:";
-	// private static final String INFO_SEGMENT_KEY_CHUNKHEIGHT =
-	// "ChunkHeight:";
 
-	// Each level consists of n-number chunks (Vertical strips of tiles)
-	private ArrayList<LevelChunk> chunks;
+	private Tile[][] levelData;
 
 	// All tiles currently visible, updated each frame
-	public static ArrayList<Tile> visibleTiles;
+	public ArrayList<Tile> visibleTiles;
+
+	public static Level currentLevel;
 
 	public Level(String filePath) throws IOException {
-		this.chunks = new ArrayList<>();
 		this.entities = new ArrayList<>();
 
 		this.levelName = "NoName";
 		this.tileWidth = 75;
 		this.tileHeight = 75;
-		this.chunkWidth = 32;
-		// Chunk height == -1 => Chunk height will equal height of level
-		// this.chunkHeight = -1;
 		this.playerSpawnX = 0;
 		this.playerSpawnY = 0;
 
@@ -142,9 +136,6 @@ public class Level extends GameObject {
 			} else if (line.startsWith(INFO_SEGMENT_KEY_TILEHEIGHT)) {
 				this.tileHeight = new Integer(
 						line.substring(INFO_SEGMENT_KEY_TILEHEIGHT.length()).replaceAll("\r", ""));
-			} else if (line.startsWith(INFO_SEGMENT_KEY_CHUNKWIDTH)) {
-				this.chunkWidth = new Integer(
-						line.substring(INFO_SEGMENT_KEY_CHUNKWIDTH.length()).replaceAll("\r", ""));
 			} else {
 				System.err.println("Unrecognized InfoSegment line in \"" + filePath + "\": " + line);
 			}
@@ -154,95 +145,47 @@ public class Level extends GameObject {
 		levelSegment = levelSegment.replaceAll(" ", "");
 		levelSegment = levelSegment.replaceAll("\t", "");
 
-		// Determine basic level parameters
-		int levelWidth = 0;
-		for (String line : levelSegment.split("\n"))
+		// Determine basic level parameters TODO: make more robust
+		this.levelWidth = levelSegment.split("\n")[1].length();
+		this.levelHeight = levelSegment.split("\n").length;
 
-		{
-			line = line.replaceAll("\n", "");
-			line = line.replaceAll("\r", "");
-			if (line.startsWith("\r") || line.equals(""))
+		this.levelData = new Tile[levelWidth][levelHeight];
+
+		System.out.println("Level: (" + levelWidth + ", " + levelHeight + ")");
+
+		int y = 0;
+		for (String line : levelSegment.split("\n")) {
+			if (line.startsWith("\r") || line.isEmpty())
 				continue;
 
-			this.levelHeight++;
-			levelWidth = line.length() > levelWidth ? line.length() : levelWidth;
-		}
-
-		// Determine amount of chunks needed and allocate space
-		String[] chunkStrings = new String[levelWidth % this.chunkWidth == 0 ? levelWidth / this.chunkWidth
-				: levelWidth / this.chunkWidth + 1];
-		// Initialize space
-		for (int i = 0; i < chunkStrings.length; i++)
-
-		{
-			chunkStrings[i] = "";
-		}
-
-		// Split level into chunks
-		for (
-
-		String line : levelSegment.split("\n"))
-
-		{
-			line = line.replaceAll("\n", "");
-			line = line.replaceAll("\r", "");
-			if (line.startsWith("\r") || line.equals(""))
-				continue;
-
-			for (int i = 0; i < chunkStrings.length; i++) {
-				int chunkBeginIndex = i * this.chunkWidth;
-				int chunkEndIndex = chunkBeginIndex + this.chunkWidth >= line.length() ? line.length()
-						: chunkBeginIndex + this.chunkWidth;
-				chunkStrings[i] = chunkStrings[i] + line.substring(chunkBeginIndex, chunkEndIndex) + "\n";
-			}
-		}
-
-		// Parse each individual chunk
-		for (int i = 0; i < chunkStrings.length; i++) {
-			// Allocate new Chunk. ypos is defined to be 0
-			LevelChunk chunk = new LevelChunk(this, i * this.chunkWidth * this.tileWidth, 0, this.chunkWidth,
-					this.levelHeight);// this.chunkHeight > 0 ? this.chunkHeight
-										// :
-										// levelHeight);
-			String chunkData = chunkStrings[i];
-			int y = 0;
-
-			// Loop through chunk data and parse
-			for (String line : chunkData.split("\n")) {
+			try {
 				for (int x = 0; x < line.length(); x++) {
-					Tile tile = null;
-
-					switch (line.charAt(x)) {
-					case '-': // Platform
-						tile = new TilePlatform(i * this.chunkWidth * this.tileWidth + x * this.tileWidth,
-								y * this.tileHeight, this.tileWidth, this.tileHeight);
-						break;
-					case 'b':
-						try {
-							this.entities.add(new Blob(i * this.chunkWidth * this.tileWidth + x * this.tileWidth,
-									y * this.tileHeight, 100, 100));
-						} catch (SlickException e) {
-							System.err.println("[Level] Could not create Blob");
-							e.printStackTrace();
-						}
-						break;
-					case 'x': // Player spawn
-						this.playerSpawnX = i * this.chunkWidth * this.tileWidth + x * this.tileWidth;
-						this.playerSpawnY = y * this.tileHeight;
-					case '*': // Empty space
-					default:
-						tile = null;
-					}
-
-					chunk.setTile(tile, x, y);
+					this.levelData[x][y] = this.parseCharData(x, y, line.charAt(x));
 				}
-
-				// Don't forget to increase y
-				y++;
+			} catch (SlickException e) {
+				e.printStackTrace();
 			}
 
-			this.chunks.add(chunk);
+			y++;
 		}
+	}
+
+	private Tile parseCharData(int x, int y, char character) throws SlickException {
+		switch (character) {
+		case '-':
+			return new TilePlatform(x * this.tileWidth, y * this.tileHeight, this.tileWidth, this.tileHeight);
+		case 'x':
+			this.playerSpawnX = x * this.tileWidth;
+			this.playerSpawnY = y * this.tileHeight;
+			break;
+		case 'b':
+			this.entities.add(new Blob(x * this.tileWidth, y * this.tileWidth, 100, 100));
+			break;
+		default:
+			break;
+		}
+
+		return null;
 	}
 
 	@Override
@@ -269,7 +212,7 @@ public class Level extends GameObject {
 	public void render(Graphics g, Vector2f cameraFoot, int viewPortX, int viewPortY, int viewPortWidth,
 			int viewPortHeight) throws SlickException {
 		// Find visible tiles
-		visibleTiles = this.getTilesInsideAABB(viewPortX, viewPortY, viewPortWidth + this.tileWidth,
+		visibleTiles = this.getTilesInsideAABB(viewPortX, viewPortY, viewPortWidth + this.tileWidth * 2,
 				viewPortHeight + this.tileHeight);
 
 		if (Game.RAY_DEBUG_MODE_ENABLED && cameraFoot != null)
@@ -329,72 +272,26 @@ public class Level extends GameObject {
 	 */
 	public ArrayList<Tile> getTilesInsideAABB(int x, int y, int width, int height) {
 		// Allocate space for the tiles
-		ArrayList<Tile> tiles = new ArrayList<>();// new Tile[(width /
-													// this.tileWidth) * (height
-													// / this.tileHeight)];
-		// int tileIndex = 0;
+		ArrayList<Tile> tiles = new ArrayList<>();
 
-		// Figure out which chunks we need to ask for tiles: convert x to
-		// chunkIndex
-		int startChunkIndex = ((x / this.tileWidth) - 1) / this.chunkWidth;
-		int endChunkIndex = (((x + width) / this.tileWidth) - 1) / this.chunkWidth;
+		// Convert values to tileData() indexes
+		x /= this.tileWidth;
+		y /= this.tileHeight;
+		width /= this.tileWidth;
+		height /= this.tileHeight;
 
-		if (startChunkIndex < 0)
-			startChunkIndex = 0;
-		else if (startChunkIndex >= this.chunks.size())
-			startChunkIndex = this.chunks.size() - 1;
+		// Bounds checking
+		x = x > 0 ? (x < this.levelWidth ? x : this.levelWidth - 1) : 0;
+		y = y > 0 ? (y < this.levelHeight ? y : this.levelHeight - 1) : 0;
+		width = width > 0 ? (x + width < this.levelWidth ? width : this.levelWidth - x) : 0;
+		height = height > 0 ? (y + height < this.levelHeight ? height : this.levelHeight - y) : 0;
 
-		if (endChunkIndex < 0)
-			endChunkIndex = 0;
-		else if (endChunkIndex >= this.chunks.size())
-			endChunkIndex = this.chunks.size() - 1;
-
-		// Figure out which tiles we want
-		int firstTileX = ((x / this.tileWidth) - 1);
-		int firstTileY = ((y / this.tileHeight) - 1);
-		int lastTileX = (((x + width) / this.tileWidth) - 1);
-		int lastTileY = (((y + height) / this.tileHeight) - 1);
-
-		if (firstTileX < 0)
-			firstTileX = 0;
-		if (firstTileX >= this.chunkWidth * this.chunks.size())
-			return tiles;
-
-		if (lastTileY < 0)
-			return tiles;
-		if (lastTileY >= this.levelHeight)
-			lastTileY = this.levelHeight - 1;
-
-		if (lastTileX < 0)
-			return tiles;
-		if (lastTileX >= this.chunkWidth * this.chunks.size())
-			lastTileX = this.chunkWidth * this.chunks.size() - 1;
-
-		if (firstTileY < 0)
-			firstTileY = 0;
-		if (firstTileY >= this.levelHeight)
-			return tiles;
-
-		// Loop through these chunks and ask for tiles
-		for (int i = startChunkIndex; i <= endChunkIndex; i++) {
-			int startX = firstTileX - this.chunkWidth * i;
-			if (startX < 0)
-				startX = 0;
-
-			int stopX = lastTileX - this.chunkWidth * i;
-			if (stopX >= this.chunkWidth)
-				stopX = this.chunkWidth - 1;
-
-			if (stopX <= 0)
-				stopX = 1;
-			if (startX >= this.chunkWidth - 1)
-				startX = this.chunkWidth - 2;
-
-			Tile[] chunkTiles = this.chunks.get(i).getTiles(startX, firstTileY, stopX, lastTileY);
-			for (Tile tile : chunkTiles) {
-				if (tile != null)
-					// tiles[tileIndex++] = tile;
-					tiles.add(tile);
+		// Get tiles from those parameters
+		for (int i = x; i < x + width; i++) {
+			for (int j = y; j < y + height; j++) {
+				Tile tileToAdd = this.levelData[i][j];
+				if (tileToAdd != null)
+					tiles.add(tileToAdd);
 			}
 		}
 
@@ -417,6 +314,41 @@ public class Level extends GameObject {
 				// Add all lineSegments
 				lineSegments.add(line);
 
+				// // Add rays for tile
+				// boolean footExistent = false;
+				// boolean tipExistent = false;
+				// for (Vector2f rayTip : rayTips) {
+				// if (rayTip.equals(line.foot))
+				// footExistent = true;
+				//
+				// if (rayTip.equals(line.tip))
+				// tipExistent = true;
+				//
+				// if (footExistent && tipExistent)
+				// break;
+				// }
+				//
+				// // Calculate rays
+				// if (!footExistent) {
+				// // Add ray to center of tile (When rayTip.x == rayFoot.x we
+				// get very
+				// // weird behaviour -> workaround patch
+				// if (line.foot.x != foot.x)
+				// rayTips.add(line.foot);
+				// else
+				// rayTips.add(new Vector2f(line.foot.x +1, line.foot.y));
+				// }
+				//
+				// if (!tipExistent) {
+				// // Add ray to center of tile (When rayTip.x == rayFoot.x we
+				// get very
+				// // weird behaviour -> workaround patch
+				// if (line.tip.x != foot.x)
+				// rayTips.add(line.tip);
+				// else
+				// rayTips.add(new Vector2f(line.tip.x + 1, line.tip.y));
+				// }
+
 				// Add rays for tile
 				boolean footExistent = false;
 				boolean tipExistent = false;
@@ -432,12 +364,34 @@ public class Level extends GameObject {
 				}
 
 				// Calculate rays
-				if (!footExistent)
-					rayTips.add(line.foot);
+				if (!footExistent) {
+					// Add ray to center of tile (When rayTip.x == rayFoot.x we
+					// get very
+					// weird behaviour -> workaround patch
+					if (line.foot.x != foot.x)
+						rayTips.add(line.foot);
+					else
+						rayTips.add(new Vector2f(line.foot.x + 1, line.foot.y));
+				}
 
-				if (!tipExistent)
-					rayTips.add(line.tip);
+				if (!tipExistent) {
+					// Add ray to center of tile (When rayTip.x == rayFoot.x we
+					// get very
+					// weird behaviour -> workaround patch
+					if (line.tip.x != foot.x)
+						rayTips.add(line.tip);
+					else
+						rayTips.add(new Vector2f(line.tip.x + 1, line.tip.y));
+				}
 			}
+
+			// // Add ray to center of tile (When rayTip.x == rayFoot.x we get
+			// very
+			// // weird behaviour -> workaround patch
+			// int vectorX = tile.x + tile.width / 2;
+			// Vector2f rayTip = new Vector2f(vectorX == foot.x ? ++vectorX :
+			// vectorX, tile.y + tile.height / 2);
+			// rayTips.add(rayTip);
 		}
 
 		visibleTiles.clear();
@@ -473,7 +427,7 @@ public class Level extends GameObject {
 	 * @param RayFoot
 	 * @return
 	 */
-	public static boolean isVisible(PhysicsObject object, Vector2f rayFoot) {
+	public boolean isVisible(PhysicsObject object, Vector2f rayFoot) {
 		// Calculate rays to be sent
 		ArrayList<Vector2f> rayTips = new ArrayList<>();
 		rayTips.add(new Vector2f(object.x + object.width / 2, object.y));
@@ -483,7 +437,7 @@ public class Level extends GameObject {
 		// Get all line segments
 		for (Vector2f rayTip : rayTips) {
 			Vector3f closestIntersection = null;
-			for (Tile tile : visibleTiles) {
+			for (Tile tile : this.visibleTiles) {
 				for (LineSegment segment : tile.getOuterLineSegments()) {
 					// Ray check for each segment
 					Vector3f intersection = Maths.getRayImpactPoint(rayFoot, rayTip, segment.foot, segment.tip);
@@ -519,5 +473,24 @@ public class Level extends GameObject {
 		}
 
 		return false;
+	}
+
+	public Tile[][] getNeighboringTiles(Tile tile) {
+		// get Tiles in AABB around tile
+		ArrayList<Tile> tiles = this.getTilesInsideAABB(tile.x + tile.width / 2 - this.tileWidth,
+				tile.y + tile.height / 2 - this.tileHeight, 3 * this.tileWidth, 3 * this.tileHeight);
+
+		// Sort tiles according to geometric layout
+		Tile[][] neighborTiles = new Tile[3][3];
+
+		// Sort tiles based on x and y position
+		for (Tile neighbor : tiles) {
+			int neighborX = (neighbor.x - tile.x) < 0 ? 0 : (neighbor.x == tile.x ? 1 : 2);
+			int neighborY = (neighbor.y - tile.y) < 0 ? 0 : (neighbor.y == tile.y ? 1 : 2);
+
+			neighborTiles[neighborX][neighborY] = neighbor;
+		}
+
+		return neighborTiles;
 	}
 }

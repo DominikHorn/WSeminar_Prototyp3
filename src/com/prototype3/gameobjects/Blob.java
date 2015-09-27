@@ -72,7 +72,7 @@ public class Blob extends PhysicsObject {
 		// Can we see the player? Ask every 2 ticks
 		if (aiTimer++ % 2 == 0) {
 			playerVisible = false;
-			if (Level.isVisible(Game.player, new Vector2f(this.x + this.width / 2, this.y + this.height / 2)))
+			if (Level.currentLevel.isVisible(Game.player, new Vector2f(this.x + this.width / 2, this.y + this.height / 2)))
 				playerVisible = true;
 		}
 

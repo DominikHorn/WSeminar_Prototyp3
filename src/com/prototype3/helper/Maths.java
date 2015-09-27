@@ -54,7 +54,7 @@ public class Maths {
 		if (T2 < 0 || T2 > 1)
 			return null;
 		// Return the POINT OF INTERSECTION
-		return new Vector3f(r_px + r_dx * T1, r_py + r_dy * T1, T1);
+		return new Vector3f(r_px + r_dx * T1, r_py + r_dy * T1, T1 * T1);
 	}
 
 	public static float distanceX(PhysicsObject object1, PhysicsObject object2) {

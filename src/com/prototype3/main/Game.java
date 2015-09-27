@@ -21,9 +21,6 @@ public class Game extends BasicGame {
 	private static final int DISPLAY_WIDTH = 1920;
 	private static final int DISPLAY_HEIGHT = 1080;
 
-	// The level on which we play
-	private Level level;
-
 	// Entities
 	public ArrayList<PhysicsObject> entities;
 	public ArrayList<Blob> blobs;
@@ -66,16 +63,16 @@ public class Game extends BasicGame {
 
 		// Setup + load level
 		try {
-			this.level = new Level("assets/level/Level1");
+			Level.currentLevel = new Level("assets/level/Level1");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
 		// Setup player
-		player = new Player(this.level.playerSpawnX, this.level.playerSpawnY, 74, 149);
+		player = new Player(Level.currentLevel.playerSpawnX, Level.currentLevel.playerSpawnY, 74, 149);
 
 		// Setup entities
-		for (PhysicsObject object : this.level.entities) {
+		for (PhysicsObject object : Level.currentLevel.entities) {
 			if (object instanceof Blob)
 				this.blobs.add((Blob) object);
 
@@ -99,16 +96,16 @@ public class Game extends BasicGame {
 		if (container.getInput().isKeyDown(Input.KEY_F1)) {
 			player.speedX = 0;
 			player.speedY = 0;
-			player.x = this.level.playerSpawnX;
-			player.y = this.level.playerSpawnY;
+			player.x = Level.currentLevel.playerSpawnX;
+			player.y = Level.currentLevel.playerSpawnY;
 		}
 
 		// pre physics player + level
 		player.prePhysicsUpdate(delta);
-		level.prePhysicsUpdate(delta);
+		Level.currentLevel.prePhysicsUpdate(delta);
 
 		// Handle Player + tile collision!
-		ArrayList<Tile> nearPlayerTiles = this.level.getTilesInsideAABB(player.x - 300, player.y - 300, 600,
+		ArrayList<Tile> nearPlayerTiles = Level.currentLevel.getTilesInsideAABB(player.x - 300, player.y - 300, 600,
 				600);
 		for (Tile tile : nearPlayerTiles) {
 			// No more valid tiles will follow
@@ -120,7 +117,7 @@ public class Game extends BasicGame {
 
 		// after physics player + level
 		player.afterPhysicsUpdate(delta);
-		this.level.afterPhysicsUpdate(delta);
+		Level.currentLevel.afterPhysicsUpdate(delta);
 
 		// Update camera
 		this.cameraOriginX = player.x - DISPLAY_WIDTH / 2 + player.width / 2;
@@ -142,7 +139,7 @@ public class Game extends BasicGame {
 		}
 
 		// Resolve visible entity + visible tile collision
-		for (Tile tile : Level.visibleTiles) {
+		for (Tile tile : Level.currentLevel.visibleTiles) {
 			// No more valid tiles will follow
 			if (tile == null)
 				break;
@@ -170,7 +167,7 @@ public class Game extends BasicGame {
 		g.translate(-this.cameraOriginX, -this.cameraOriginY);
 
 		// Render Background first
-		this.level.render(g,
+		Level.currentLevel.render(g,
 				new Vector2f(player.x + player.width / 2, player.y + player.height / 8),
 				cameraOriginX, cameraOriginY, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 
