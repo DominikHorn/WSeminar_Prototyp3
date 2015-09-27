@@ -1,6 +1,10 @@
 package com.prototype3.gameobjects.tiles;
 
+import java.util.ArrayList;
+
 import org.newdawn.slick.*;
+
+import com.prototype3.helper.LineSegment;
 
 public class TileSlide extends Tile {
 	private Image tileSprite;
@@ -28,5 +32,12 @@ public class TileSlide extends Tile {
 	public void render(Graphics g, int viewPortX, int viewPortY, int viewPortWidth, int viewPortHeight)
 			throws SlickException {
 		this.tileSprite.draw(this.x, this.y, this.width, this.height);
+	}
+
+	@Override
+	public ArrayList<LineSegment> getOuterLineSegments() {
+		System.err.println("UNIMPLEMENTED");
+		System.exit(0);
+		return null;
 	}
 }

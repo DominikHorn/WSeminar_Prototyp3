@@ -3,6 +3,7 @@ package com.prototype3.main;
 import java.io.*;
 import java.util.ArrayList;
 
+import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.SlickException;
 
@@ -11,7 +12,11 @@ import com.prototype3.gameobjects.GameObject;
 import com.prototype3.gameobjects.PhysicsObject;
 import com.prototype3.gameobjects.tiles.Tile;
 import com.prototype3.gameobjects.tiles.TilePlatform;
+import com.prototype3.helper.LineSegment;
+import com.prototype3.helper.Maths;
 import com.prototype3.helper.StringUtility;
+import com.prototype3.helper.Vector2f;
+import com.prototype3.helper.Vector3f;
 
 public class Level extends GameObject {
 	/* Info default values TODO: accessors */
@@ -262,7 +267,6 @@ public class Level extends GameObject {
 
 			this.chunks.add(chunk);
 		}
-
 	}
 
 	@Override
@@ -281,13 +285,64 @@ public class Level extends GameObject {
 		}
 	}
 
+	/**
+	 * Renders Level with lighting effects centered around cameraFoot
+	 * 
+	 * @param g
+	 * @param cameraFoot
+	 * @param viewPortX
+	 * @param viewPortY
+	 * @param viewPortWidth
+	 * @param viewPortHeight
+	 * @throws SlickException
+	 */
+	public void render(Graphics g, Vector2f cameraFoot, int viewPortX, int viewPortY, int viewPortWidth,
+			int viewPortHeight) throws SlickException {
+		// Find visible tiles
+		ArrayList<Tile> visibleTiles = this.getTilesInsideAABB(viewPortX, viewPortY, viewPortWidth + this.tileWidth,
+				viewPortHeight + this.tileHeight);
+
+		if (cameraFoot != null)
+			// Get all Line segments
+			visibleTiles = this.getVisibleFromFoot(cameraFoot, visibleTiles);
+
+		if (visibleTiles != null)
+			for (Tile tile : visibleTiles) {
+				if (tile != null)
+					tile.render(g, viewPortX, viewPortY, viewPortWidth, viewPortHeight);
+			}
+
+		// Render rays
+		for (Vector2f rayTip : this.rayTips) {
+			if (rayTip == null)
+				continue;
+			g.setLineWidth(1);
+			g.setColor(Color.white);
+			g.drawLine((float) cameraFoot.x, (float) cameraFoot.y, (float) rayTip.x, (float) rayTip.y);
+		}
+
+		// Render intersects
+		for (Vector3f rayIntersect : this.intersects) {
+			if (rayIntersect == null)
+				continue;
+			g.setColor(Color.red);
+			g.fillOval(rayIntersect.x - 5, rayIntersect.y - 5, 10, 10);
+		}
+
+		// Render line segments
+		for (LineSegment segment : this.lineSegments) {
+			if (segment == null)
+				continue;
+			g.setColor(Color.green);
+			g.setLineWidth(2);
+			g.drawLine((float) segment.foot.x, (float) segment.foot.y, (float) segment.tip.x, (float) segment.tip.y);
+		}
+	}
+
 	@Override
 	public void render(Graphics g, int viewPortX, int viewPortY, int viewPortWidth, int viewPortHeight)
 			throws SlickException {
-		// Render chunks
-		for (LevelChunk chunk : this.chunks) {
-			chunk.render(g, viewPortX, viewPortY, viewPortWidth, viewPortHeight);
-		}
+		this.render(g, null, viewPortX, viewPortY, viewPortWidth, viewPortHeight);
 	}
 
 	/**
@@ -299,10 +354,12 @@ public class Level extends GameObject {
 	 * @param height
 	 * @return
 	 */
-	public Tile[] getTilesInsideAABB(int x, int y, int width, int height) {
+	public ArrayList<Tile> getTilesInsideAABB(int x, int y, int width, int height) {
 		// Allocate space for the tiles
-		Tile[] tiles = new Tile[(width / this.tileWidth) * (height / this.tileHeight)];
-		int tileIndex = 0;
+		ArrayList<Tile> tiles = new ArrayList<>();// new Tile[(width /
+													// this.tileWidth) * (height
+													// / this.tileHeight)];
+		// int tileIndex = 0;
 
 		// Figure out which chunks we need to ask for tiles: convert x to
 		// chunkIndex
@@ -365,10 +422,76 @@ public class Level extends GameObject {
 			Tile[] chunkTiles = this.chunks.get(i).getTiles(startX, firstTileY, stopX, lastTileY);
 			for (Tile tile : chunkTiles) {
 				if (tile != null)
-					tiles[tileIndex++] = tile;
+					// tiles[tileIndex++] = tile;
+					tiles.add(tile);
 			}
 		}
 
 		return tiles;
+	}
+
+	ArrayList<Vector2f> rayTips = new ArrayList<>();
+	ArrayList<Vector3f> intersects = new ArrayList<>();
+	ArrayList<LineSegment> lineSegments = new ArrayList<>();
+
+	public ArrayList<Tile> getVisibleFromFoot(Vector2f foot, ArrayList<Tile> visibleTiles) {
+		lineSegments.clear();
+		intersects.clear();
+		rayTips.clear();
+
+		// Get all lineSegments
+		for (Tile tile : visibleTiles) {
+			// Add all lines that make up a tile
+			for (LineSegment line : tile.getOuterLineSegments()) {
+				// Add all lineSegments
+				lineSegments.add(line);
+
+				// Add rays for tile
+				boolean footExistent = false;
+				boolean tipExistent = false;
+				for (Vector2f rayTip : rayTips) {
+					if (rayTip.equals(line.foot))
+						footExistent = true;
+
+					if (rayTip.equals(line.tip))
+						tipExistent = true;
+
+					if (footExistent && tipExistent)
+						break;
+				}
+
+				// Calculate rays
+				if (!footExistent)
+					rayTips.add(line.foot);
+
+				if (!tipExistent)
+					rayTips.add(line.tip);
+			}
+		}
+
+		visibleTiles.clear();
+
+		// Test each ray and get closest intersection for each ray
+		for (Vector2f rayTip : rayTips) {
+			Vector3f closestIntersect = null;
+			Tile closestIntersectTile = null;
+			for (LineSegment line : lineSegments) {
+				Vector3f intersect = Maths.getRayImpactPoint(foot, rayTip, line.foot, line.tip);
+				if (intersect == null)
+					continue;
+				if (closestIntersect == null || intersect.z < closestIntersect.z) {
+					closestIntersect = intersect;
+					closestIntersectTile = line.tile;
+				}
+			}
+
+			// Closest intersection found (Intersection Point + tile)
+			if (closestIntersect != null) {
+				visibleTiles.add(closestIntersectTile);
+				intersects.add(closestIntersect);
+			}
+		}
+
+		return visibleTiles;
 	}
 }

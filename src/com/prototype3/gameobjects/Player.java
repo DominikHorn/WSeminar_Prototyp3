@@ -6,7 +6,7 @@ import com.prototype3.main.Game;
 public class Player extends PhysicsObject {
 	private static final int IDLE_ANIMATION_TIME = 10000;
 	private static final float PLAYER_SPEED = 1f;
-	private static final float PLAYER_MAX_SPEED = 15f;
+	private static final float PLAYER_MAX_SPEED = 20f;
 	private static final float PLAYER_JUMP_THRUST = 35f;
 	private SpriteSheet playerSprites;
 	private Animation idleAnimation;
@@ -40,6 +40,7 @@ public class Player extends PhysicsObject {
 	@Override
 	public void prePhysicsUpdate(int delta) throws SlickException {
 		// Update speed first
+
 		// Jump
 		if (this.onGround && Game.isUpKeyDown)
 			this.speedY -= PLAYER_JUMP_THRUST;
@@ -68,9 +69,21 @@ public class Player extends PhysicsObject {
 			this.walkAnimation.update(delta);
 		else
 			this.walkAnimation.setCurrentFrame(1);
-			
+
 		// Gravity TODO: speed limit!
 		this.speedY += Game.GRAVITY;
+
+//		 this.speedX = 0f;
+//		 this.speedY = 0f;
+//		 final float SPEEDTMP = 10f;
+//		 if (Game.isDuckKeyDown)
+//		 this.speedY = +SPEEDTMP;
+//		 if (Game.isJumpKeyDown)
+//		 this.speedY = -SPEEDTMP;
+//		 if (Game.isLeftKeyDown)
+//		 this.speedX = -SPEEDTMP;
+//		 if (Game.isRightKeyDown)
+//		 this.speedX = +SPEEDTMP;
 
 		// Update newX and newY according to speed
 		super.prePhysicsUpdate(delta);

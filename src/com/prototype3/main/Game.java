@@ -11,14 +11,15 @@ import com.prototype3.gameobjects.PhysicsObject;
 import com.prototype3.gameobjects.Player;
 import com.prototype3.gameobjects.tiles.Tile;
 import com.prototype3.helper.Rect;
+import com.prototype3.helper.Vector2f;
 
 public class Game extends BasicGame {
 	// Gravity constant that applies to all entities
 	public static final float GRAVITY = 2f;
 
 	// Window width and height (GameWorld size)
-	private static final int DISPLAY_WIDTH = 1280;
-	private static final int DISPLAY_HEIGHT = 720;
+	private static final int DISPLAY_WIDTH = 1920;
+	private static final int DISPLAY_HEIGHT = 1080;
 
 	// The level on which we play
 	private Level level;
@@ -44,6 +45,7 @@ public class Game extends BasicGame {
 	public static boolean isLeftKeyDown;
 	public static boolean isRightKeyDown;
 	public static boolean isUpKeyDown;
+	public static boolean isDuckKeyDown;
 
 	public Game(String gameName) {
 		super(gameName);
@@ -84,8 +86,10 @@ public class Game extends BasicGame {
 		// Input handling
 		isLeftKeyDown = container.getInput().isKeyDown(Input.KEY_A) || container.getInput().isKeyDown(Input.KEY_LEFT);
 		isRightKeyDown = container.getInput().isKeyDown(Input.KEY_D) || container.getInput().isKeyDown(Input.KEY_RIGHT);
-		isUpKeyDown = container.getInput().isKeyDown(Input.KEY_SPACE) || container.getInput().isKeyDown(Input.KEY_W) || container.getInput().isKeyDown(Input.KEY_UP);
-		
+		isUpKeyDown = container.getInput().isKeyDown(Input.KEY_SPACE) || container.getInput().isKeyDown(Input.KEY_W)
+				|| container.getInput().isKeyDown(Input.KEY_UP);
+		isDuckKeyDown = container.getInput().isKeyDown(Input.KEY_S) || container.getInput().isKeyDown(Input.KEY_DOWN);
+
 		// TODO: Put in different class
 		if (container.getInput().isKeyDown(Input.KEY_F1)) {
 			this.player.speedX = 0;
@@ -99,7 +103,8 @@ public class Game extends BasicGame {
 		this.level.prePhysicsUpdate(delta);
 
 		// Handle Player + tile collision!
-		Tile[] nearPlayerTiles = this.level.getTilesInsideAABB(this.player.x - 300, this.player.y - 300, 600, 600);
+		ArrayList<Tile> nearPlayerTiles = this.level.getTilesInsideAABB(this.player.x - 300, this.player.y - 300, 600,
+				600);
 		for (Tile tile : nearPlayerTiles) {
 			// No more valid tiles will follow
 			if (tile == null)
@@ -132,7 +137,7 @@ public class Game extends BasicGame {
 		}
 
 		// Get tiles in visible area
-		Tile[] visibleTiles = this.level.getTilesInsideAABB(cameraOriginX, cameraOriginY, DISPLAY_WIDTH,
+		ArrayList<Tile> visibleTiles = this.level.getTilesInsideAABB(cameraOriginX, cameraOriginY, DISPLAY_WIDTH,
 				DISPLAY_HEIGHT);
 
 		// Resolve visible entity + visible tile collision
@@ -164,7 +169,9 @@ public class Game extends BasicGame {
 		g.translate(-this.cameraOriginX, -this.cameraOriginY);
 
 		// Render Background first
-		this.level.render(g, cameraOriginX, cameraOriginY, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+		this.level.render(g,
+				new Vector2f(this.player.x + this.player.width / 2, this.player.y + this.player.height / 8),
+				cameraOriginX, cameraOriginY, DISPLAY_WIDTH, DISPLAY_HEIGHT);
 
 		// Render Entities
 		for (PhysicsObject object : this.visibleEntities) {
@@ -179,14 +186,6 @@ public class Game extends BasicGame {
 	}
 
 	public static void main(String argv[]) {
-		/*
-		 * Playground
-		 */
-
-		/*
-		 * End Playground
-		 */
-
 		try {
 			AppGameContainer appgc;
 			appgc = new AppGameContainer(new Game("WSeminar-Protoype3"));

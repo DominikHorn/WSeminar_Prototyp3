@@ -1,9 +1,12 @@
 package com.prototype3.gameobjects.tiles;
 
+import java.util.ArrayList;
+
 import org.newdawn.slick.*;
 import com.prototype3.gameobjects.PhysicsObject;
+import com.prototype3.helper.LineSegment;
 
-public class Tile extends PhysicsObject {
+public abstract class Tile extends PhysicsObject {
 	public static final SpriteSheet tileSpriteSheet = loadTileSpriteSheet();
 
 	private static final SpriteSheet loadTileSpriteSheet() {
@@ -30,6 +33,8 @@ public class Tile extends PhysicsObject {
 			throws SlickException {
 		this.sprite.draw(this.x, this.y, this.width, this.height);
 	}
+	
+	public abstract ArrayList<LineSegment> getOuterLineSegments();
 
 	@Override
 	public String toString() {
