@@ -43,7 +43,7 @@ public class Game extends BasicGame {
 			e.printStackTrace();
 		}
 
-		this.player = new Player(this.level.playerSpawnX, this.level.playerSpawnY, 75, 145);
+		this.player = new Player(this.level.playerSpawnX, this.level.playerSpawnY, 74, 149);
 	}
 
 	@Override

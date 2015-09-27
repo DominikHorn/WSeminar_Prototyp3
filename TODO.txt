@@ -1,0 +1,4 @@
+- Add Enemys
+- Add more level tiles (Slide?)
+- Add end goal
+- Add Neural networks and train them

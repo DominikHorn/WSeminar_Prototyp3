@@ -9,6 +9,7 @@ public class Player extends PhysicsObject {
 	private static final float PLAYER_MAX_SPEED = 15f;
 	private SpriteSheet playerSprites;
 	private Animation idleAnimation;
+	private Animation walkAnimation;
 	private Image playerImage;
 	private int idleTime;
 	private boolean playIdleAnimation;
@@ -23,11 +24,16 @@ public class Player extends PhysicsObject {
 
 		Image[] idleImages = new Image[] { this.playerSprites.getSubImage(0, 0), this.playerSprites.getSubImage(1, 0),
 				this.playerSprites.getSubImage(2, 0), this.playerSprites.getSubImage(3, 0), };
+		Image[] walkImages = new Image[] { this.playerSprites.getSubImage(1, 1), this.playerSprites.getSubImage(2, 1) };
 
 		int[] idleImageDurations = new int[] { 750, 1000, 2000, 3000, };
+		int[] walkAnimationDurations = new int[] { 60, 60 };
 
 		this.idleAnimation = new Animation(idleImages, idleImageDurations, false);
 		this.idleAnimation.setLooping(false);
+
+		this.walkAnimation = new Animation(walkImages, walkAnimationDurations, false);
+		this.walkAnimation.setLooping(true);
 	}
 
 	@Override
@@ -73,6 +79,10 @@ public class Player extends PhysicsObject {
 		} else
 			this.idleTime = 0;
 
+		if (this.onGround && (Game.isRightKeyDown || Game.isLeftKeyDown)) {
+			this.walkAnimation.update(delta);
+		}
+
 		if (this.playIdleAnimation) {
 			this.idleAnimation.update(delta);
 			if (this.idleAnimation.isStopped())
@@ -92,6 +102,11 @@ public class Player extends PhysicsObject {
 
 		if (this.playIdleAnimation)
 			this.idleAnimation.draw(this.x, this.y, this.width, this.height);
+		else if (this.speedX * this.speedX > 0)
+			if (this.speedX > 0)
+				this.walkAnimation.draw(this.x, this.y, this.width, this.height);
+			else
+				this.walkAnimation.draw(this.x + this.width, this.y, -this.width, this.height);
 		else
 			this.playerImage.draw(this.x, this.y, this.width, this.height);
 	}

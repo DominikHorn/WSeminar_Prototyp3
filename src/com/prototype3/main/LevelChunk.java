@@ -111,8 +111,13 @@ public class LevelChunk extends PhysicsObject {
 					break;
 
 				Tile tile = this.tiles[i][j];
-				if (tile != null)
+				if (tile != null) {
+					// Lazy crash fix
+					if (tilesIndex >= tiles.length)	
+						return tiles;
+					
 					tiles[tilesIndex++] = tile;
+				}
 			}
 		}
 
