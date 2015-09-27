@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.SlickException;
 
+import com.prototype3.gameobjects.Blob;
 import com.prototype3.gameobjects.GameObject;
+import com.prototype3.gameobjects.PhysicsObject;
 import com.prototype3.gameobjects.tiles.Tile;
 import com.prototype3.gameobjects.tiles.TilePlatform;
 import com.prototype3.helper.StringUtility;
@@ -21,6 +23,10 @@ public class Level extends GameObject {
 	public int playerSpawnX;
 	public int playerSpawnY;
 	public int levelHeight;
+
+	// Loaded entities, [Game] will sort and add them to it's own data
+	// structures
+	public ArrayList<PhysicsObject> entities;
 
 	/* FileFormat tags */
 	private static final String INFO_SEGMENT_TAG = "!Info";
@@ -39,6 +45,7 @@ public class Level extends GameObject {
 
 	public Level(String filePath) throws IOException {
 		this.chunks = new ArrayList<>();
+		this.entities = new ArrayList<>();
 
 		this.levelName = "NoName";
 		this.tileWidth = 75;
@@ -228,6 +235,15 @@ public class Level extends GameObject {
 					case '-': // Platform
 						tile = new TilePlatform(i * this.chunkWidth * this.tileWidth + x * this.tileWidth,
 								y * this.tileHeight, this.tileWidth, this.tileHeight);
+						break;
+					case 'b':
+						try {
+							this.entities.add(new Blob(i * this.chunkWidth * this.tileWidth + x * this.tileWidth,
+									y * this.tileHeight, 100, 100));
+						} catch (SlickException e) {
+							System.err.println("[Level] Could not create Blob");
+							e.printStackTrace();
+						}
 						break;
 					case 'x': // Player spawn
 						this.playerSpawnX = i * this.chunkWidth * this.tileWidth + x * this.tileWidth;

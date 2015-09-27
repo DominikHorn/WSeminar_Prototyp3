@@ -4,9 +4,10 @@ import org.newdawn.slick.*;
 import com.prototype3.main.Game;
 
 public class Player extends PhysicsObject {
-	private static final int IDLE_ANIMATION_TIME = 5000;
+	private static final int IDLE_ANIMATION_TIME = 10000;
 	private static final float PLAYER_SPEED = 1f;
 	private static final float PLAYER_MAX_SPEED = 15f;
+	private static final float PLAYER_JUMP_THRUST = 35f;
 	private SpriteSheet playerSprites;
 	private Animation idleAnimation;
 	private Animation walkAnimation;
@@ -27,7 +28,7 @@ public class Player extends PhysicsObject {
 		Image[] walkImages = new Image[] { this.playerSprites.getSubImage(1, 1), this.playerSprites.getSubImage(2, 1) };
 
 		int[] idleImageDurations = new int[] { 750, 1000, 2000, 3000, };
-		int[] walkAnimationDurations = new int[] { 60, 60 };
+		int[] walkAnimationDurations = new int[] { 100, 100 };
 
 		this.idleAnimation = new Animation(idleImages, idleImageDurations, false);
 		this.idleAnimation.setLooping(false);
@@ -39,9 +40,10 @@ public class Player extends PhysicsObject {
 	@Override
 	public void prePhysicsUpdate(int delta) throws SlickException {
 		// Update speed first
+		// Jump
 		if (this.onGround && Game.isUpKeyDown)
-			this.speedY -= 20f;
-		
+			this.speedY -= PLAYER_JUMP_THRUST;
+
 		if (Game.isLeftKeyDown) {
 			if (this.speedX > -PLAYER_MAX_SPEED) {
 				this.speedX -= PLAYER_SPEED;
@@ -49,7 +51,7 @@ public class Player extends PhysicsObject {
 				this.speedX = -PLAYER_MAX_SPEED;
 			}
 		} else if (this.onGround && this.speedX < 0) {
-			this.speedX += this.speedX < -PLAYER_SPEED ? PLAYER_SPEED : -this.speedX;
+			this.speedX -= this.speedX < -2 * PLAYER_SPEED ? -2 * PLAYER_SPEED : this.speedX;
 		}
 
 		if (Game.isRightKeyDown) {
@@ -59,9 +61,14 @@ public class Player extends PhysicsObject {
 				this.speedX = PLAYER_MAX_SPEED;
 			}
 		} else if (this.onGround && this.speedX > 0) {
-			this.speedX -= this.speedX > PLAYER_SPEED ? PLAYER_SPEED : this.speedX;
+			this.speedX -= this.speedX > 2 * PLAYER_SPEED ? 2 * PLAYER_SPEED : this.speedX;
 		}
 
+		if (this.onGround)
+			this.walkAnimation.update(delta);
+		else
+			this.walkAnimation.setCurrentFrame(1);
+			
 		// Gravity TODO: speed limit!
 		this.speedY += Game.GRAVITY;
 
@@ -78,10 +85,6 @@ public class Player extends PhysicsObject {
 			this.idleTime += delta;
 		} else
 			this.idleTime = 0;
-
-		if (this.onGround && (Game.isRightKeyDown || Game.isLeftKeyDown)) {
-			this.walkAnimation.update(delta);
-		}
 
 		if (this.playIdleAnimation) {
 			this.idleAnimation.update(delta);
@@ -102,8 +105,8 @@ public class Player extends PhysicsObject {
 
 		if (this.playIdleAnimation)
 			this.idleAnimation.draw(this.x, this.y, this.width, this.height);
-		else if (this.speedX * this.speedX > 0)
-			if (this.speedX > 0)
+		else if (this.speedX * this.speedX > 0 || Game.isLeftKeyDown || Game.isRightKeyDown)
+			if (this.speedX > 0 || Game.isRightKeyDown)
 				this.walkAnimation.draw(this.x, this.y, this.width, this.height);
 			else
 				this.walkAnimation.draw(this.x + this.width, this.y, -this.width, this.height);
