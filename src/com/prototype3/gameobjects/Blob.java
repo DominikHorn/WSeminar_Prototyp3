@@ -52,6 +52,8 @@ public class Blob extends PhysicsObject {
 			}
 
 		super.prePhysicsUpdate(delta);
+		
+		System.out.println("LoL");
 	}
 
 	@Override

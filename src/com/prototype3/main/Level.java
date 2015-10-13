@@ -314,41 +314,6 @@ public class Level extends GameObject {
 				// Add all lineSegments
 				lineSegments.add(line);
 
-				// // Add rays for tile
-				// boolean footExistent = false;
-				// boolean tipExistent = false;
-				// for (Vector2f rayTip : rayTips) {
-				// if (rayTip.equals(line.foot))
-				// footExistent = true;
-				//
-				// if (rayTip.equals(line.tip))
-				// tipExistent = true;
-				//
-				// if (footExistent && tipExistent)
-				// break;
-				// }
-				//
-				// // Calculate rays
-				// if (!footExistent) {
-				// // Add ray to center of tile (When rayTip.x == rayFoot.x we
-				// get very
-				// // weird behaviour -> workaround patch
-				// if (line.foot.x != foot.x)
-				// rayTips.add(line.foot);
-				// else
-				// rayTips.add(new Vector2f(line.foot.x +1, line.foot.y));
-				// }
-				//
-				// if (!tipExistent) {
-				// // Add ray to center of tile (When rayTip.x == rayFoot.x we
-				// get very
-				// // weird behaviour -> workaround patch
-				// if (line.tip.x != foot.x)
-				// rayTips.add(line.tip);
-				// else
-				// rayTips.add(new Vector2f(line.tip.x + 1, line.tip.y));
-				// }
-
 				// Add rays for tile
 				boolean footExistent = false;
 				boolean tipExistent = false;
@@ -384,14 +349,6 @@ public class Level extends GameObject {
 						rayTips.add(new Vector2f(line.tip.x + 1, line.tip.y));
 				}
 			}
-
-			// // Add ray to center of tile (When rayTip.x == rayFoot.x we get
-			// very
-			// // weird behaviour -> workaround patch
-			// int vectorX = tile.x + tile.width / 2;
-			// Vector2f rayTip = new Vector2f(vectorX == foot.x ? ++vectorX :
-			// vectorX, tile.y + tile.height / 2);
-			// rayTips.add(rayTip);
 		}
 
 		visibleTiles.clear();

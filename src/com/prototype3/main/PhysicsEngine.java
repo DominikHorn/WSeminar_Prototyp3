@@ -18,7 +18,7 @@ public class PhysicsEngine {
 		if (object1.usesSimpleCollision && object2.usesSimpleCollision)
 			resolveAABBCollision(object1, object2);
 	}
-	
+
 	public static void resolveAABBCollision(PhysicsObject object1, PhysicsObject object2) {
 		if (areRectsIntersecting(new Rect(object1.x + (int) object1.speedX, object1.y, object1.width, object1.height),
 				new Rect(object2.x + (int) object2.speedX, object2.y, object2.width, object2.height))) {
@@ -58,9 +58,10 @@ public class PhysicsEngine {
 
 			// TODO: fix cheap and messy implementation
 			if (separation2 > 0)
-				object1.onGround = true;
-			else
-				object2.onGround = true;
+				if (object2.isStatic)
+					object1.onGround = true;
+				else if (object1.isStatic)
+					object2.onGround = true;
 
 			if (object1.isStatic && object2.isStatic) {
 				System.err.println("Two static objects colliding: (" + object1 + ", " + object2 + ")");

@@ -4,6 +4,9 @@ import org.newdawn.slick.*;
 import com.prototype3.main.Game;
 
 public class Player extends PhysicsObject {
+	public static final int PLAYER_MAX_HEALTH = 5;
+	public int playerHealth = PLAYER_MAX_HEALTH;
+	
 	private static final int IDLE_ANIMATION_TIME = 10000;
 	private static final float PLAYER_SPEED = 1f;
 	private static final float PLAYER_MAX_SPEED = 20f;
@@ -17,7 +20,7 @@ public class Player extends PhysicsObject {
 
 	public Player(int x, int y, int width, int height) throws SlickException {
 		super(x, y, width, height);
-
+		
 		this.idleTime = 0;
 		this.playIdleAnimation = false;
 		this.playerSprites = new SpriteSheet(new Image("assets/img/Player.png"), 128, 256);

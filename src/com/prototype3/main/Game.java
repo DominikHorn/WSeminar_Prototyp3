@@ -138,6 +138,23 @@ public class Game extends BasicGame {
 			}
 		}
 
+		// TODO: dirty quickest way to get working
+		player.isStatic = true;
+		
+		
+		// Resolve visible entity, visible entity & player collision
+		for (int i = 0; i < this.visibleEntities.size(); i++) {
+			PhysicsEngine.resolveCollision(player, this.visibleEntities.get(i));
+		
+			for (int j = 0; j < this.visibleEntities.size(); j++) {
+				if (j != i)
+					PhysicsEngine.resolveCollision(this.visibleEntities.get(i), this.visibleEntities.get(j));
+			}
+		}
+		
+		// TODO: dirty quickest way to get working
+		player.isStatic = false;
+		
 		// Resolve visible entity + visible tile collision
 		for (Tile tile : Level.currentLevel.visibleTiles) {
 			// No more valid tiles will follow
